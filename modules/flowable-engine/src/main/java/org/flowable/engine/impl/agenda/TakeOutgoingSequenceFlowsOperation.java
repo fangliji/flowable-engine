@@ -183,6 +183,8 @@ public class TakeOutgoingSequenceFlowsOperation extends AbstractOperation {
 
         } else {
 
+            // 计算满足条件的优先级最高的一条线，则只走最高的线，如果没有优先级，则不管
+            computePriority(outgoingSequenceFlows);
             // Leave, and reuse the incoming sequence flow, make executions for all the others (if applicable)
 
             ExecutionEntityManager executionEntityManager = CommandContextUtil.getExecutionEntityManager(commandContext);
@@ -215,6 +217,29 @@ public class TakeOutgoingSequenceFlowsOperation extends AbstractOperation {
             for (ExecutionEntity outgoingExecution : outgoingExecutions) {
                 agenda.planContinueProcessOperation(outgoingExecution);
             }
+        }
+    }
+
+    private void computePriority(List<SequenceFlow> outgoingSequenceFlows) {
+        // 第一步先判断链接线上面是否有优先级，如果没有优先级，则不说了，如果有优先级，按优先级排序
+        boolean flag = true;
+        // 直接找出有优先级且优先级是1的
+        SequenceFlow highestPriority = null;
+        for (SequenceFlow sequenceFlow : outgoingSequenceFlows) {
+            // 获取他的属性
+            String priority = sequenceFlow.getConditionPriority();
+            if (priority!=null && priority!="") {
+                flag = false;
+                continue;
+            }
+            if (SequenceFlow.PROPERTY_MOST_HIGHEST_PRIORITY.equals(priority)) {
+                highestPriority = sequenceFlow;
+            }
+        }
+        if (flag &&  highestPriority!=null ) {
+            // 标记为true，说明有优先级，
+            outgoingSequenceFlows.clear();
+            outgoingSequenceFlows.add(highestPriority);
         }
     }
 

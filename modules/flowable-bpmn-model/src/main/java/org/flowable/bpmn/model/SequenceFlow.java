@@ -22,11 +22,13 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
  * @author Joram Barrez
  */
 public class SequenceFlow extends FlowElement {
-
+    public static final String PROPERTY_MOST_HIGHEST_PRIORITY = "1";
     protected String conditionExpression;
     protected String sourceRef;
     protected String targetRef;
     protected String skipExpression;
+    // 增加条件优先级，用于排他网关等需要决定条件是否需要明确的优先级的情况下
+    protected String conditionPriority;
 
     // Actual flow elements that match the source and target ref
     // Set during process definition parsing
@@ -35,6 +37,8 @@ public class SequenceFlow extends FlowElement {
 
     @JsonIgnore
     protected FlowElement targetFlowElement;
+
+    protected List<CustomProperty> customProperties = new ArrayList();
 
     /**
      * Graphical information: a list of waypoints: x1, y1, x2, y2, x3, y3, ..
@@ -106,6 +110,22 @@ public class SequenceFlow extends FlowElement {
 
     public void setWaypoints(List<Integer> waypoints) {
         this.waypoints = waypoints;
+    }
+
+    public String getConditionPriority() {
+        return conditionPriority;
+    }
+
+    public void setConditionPriority(String conditionPriority) {
+        this.conditionPriority = conditionPriority;
+    }
+
+    public List<CustomProperty> getCustomProperties() {
+        return this.customProperties;
+    }
+
+    public void setCustomProperties(List<CustomProperty> customProperties) {
+        this.customProperties = customProperties;
     }
 
     @Override
