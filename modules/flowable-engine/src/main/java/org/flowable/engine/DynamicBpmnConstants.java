@@ -21,6 +21,10 @@ public interface DynamicBpmnConstants {
     String ENABLE_SKIP_EXPRESSION = "enableSkipExpression";
     String TASK_SKIP_EXPRESSION = "taskSkipExpression";
 
+    String TASK_CONTINUOUS_STRATEGY = "taskContinuousStrategy";
+    String TASK_SKIP_STRATEGY = "taskSkipStrategy";
+    String TASK_SKIP_STRATEGY_EXPRESSION = "taskSkipStrategyExpression";
+
     String SERVICE_TASK_CLASS_NAME = "serviceTaskClassName";
     String SERVICE_TASK_EXPRESSION = "serviceTaskExpression";
     String SERVICE_TASK_DELEGATE_EXPRESSION = "serviceTaskDelegateExpression";

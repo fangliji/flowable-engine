@@ -32,6 +32,12 @@ public class UserTask extends Task {
     protected String businessCalendarName;
     protected String category;
     protected String extensionId;
+    protected String continuousStrategy;
+    protected String skipStrategy;
+    protected String skipStrategyExpression;
+    protected String sequential;
+    protected String loopCardinality;
+    protected String completionCondition;
     protected List<String> candidateUsers = new ArrayList<>();
     protected List<String> candidateGroups = new ArrayList<>();
     protected List<FormProperty> formProperties = new ArrayList<>();
@@ -90,6 +96,30 @@ public class UserTask extends Task {
 
     public void setBusinessCalendarName(String businessCalendarName) {
         this.businessCalendarName = businessCalendarName;
+    }
+
+    public String getSequential() {
+        return sequential;
+    }
+
+    public void setSequential(String sequential) {
+        this.sequential = sequential;
+    }
+
+    public String getLoopCardinality() {
+        return loopCardinality;
+    }
+
+    public void setLoopCardinality(String loopCardinality) {
+        this.loopCardinality = loopCardinality;
+    }
+
+    public String getCompletionCondition() {
+        return completionCondition;
+    }
+
+    public void setCompletionCondition(String completionCondition) {
+        this.completionCondition = completionCondition;
     }
 
     public String getCategory() {
@@ -206,6 +236,30 @@ public class UserTask extends Task {
         this.validateFormFields = validateFormFields;
     }
 
+    public String getContinuousStrategy() {
+        return continuousStrategy;
+    }
+
+    public void setContinuousStrategy(String continuousStrategy) {
+        this.continuousStrategy = continuousStrategy;
+    }
+
+    public String getSkipStrategy() {
+        return skipStrategy;
+    }
+
+    public void setSkipStrategy(String skipStrategy) {
+        this.skipStrategy = skipStrategy;
+    }
+
+    public String getSkipStrategyExpression() {
+        return skipStrategyExpression;
+    }
+
+    public void setSkipStrategyExpression(String skipStrategyExpression) {
+        this.skipStrategyExpression = skipStrategyExpression;
+    }
+
     @Override
     public UserTask clone() {
         UserTask clone = new UserTask();
@@ -223,6 +277,9 @@ public class UserTask extends Task {
         setCategory(otherElement.getCategory());
         setExtensionId(otherElement.getExtensionId());
         setSkipExpression(otherElement.getSkipExpression());
+        setSkipStrategy(otherElement.getSkipStrategy());
+        setSkipStrategyExpression(otherElement.getSkipStrategyExpression());
+        setContinuousStrategy(otherElement.getContinuousStrategy());
         setValidateFormFields(otherElement.getValidateFormFields());
 
         setCandidateGroups(new ArrayList<>(otherElement.getCandidateGroups()));
