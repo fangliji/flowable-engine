@@ -163,7 +163,12 @@ public class UserTaskJsonConverter extends BaseBpmnJsonConverter implements Form
         }
 
         setPropertyValue(PROPERTY_SKIP_EXPRESSION, userTask.getSkipExpression(), propertiesNode);
-
+        setPropertyValue(PROPERTY_SKIP_STRATEGY_EXPRESSION, userTask.getSkipStrategyExpression(), propertiesNode);
+        setPropertyValue(PROPERTY_SKIP_STRATEGY, userTask.getSkipStrategy(), propertiesNode);
+        setPropertyValue(PROPERTY_CONTINUOUS_STRATEGY, userTask.getContinuousStrategy(), propertiesNode);
+        setPropertyValue(PROPERTY_SEQUENTIAL,userTask.getSequential(),propertiesNode);
+        setPropertyValue(PROPERTY_SEQUENCEFLOW_CONDITION,userTask.getCompletionCondition(),propertiesNode);
+        setPropertyValue(PROPERTY_LOOPCARDINALITY,userTask.getLoopCardinality(),propertiesNode);
         if (StringUtils.isNotEmpty(userTask.getFormKey())) {
             if (formKeyMap != null && formKeyMap.containsKey(userTask.getFormKey())) {
                 ObjectNode formRefNode = objectMapper.createObjectNode();
@@ -277,7 +282,11 @@ public class UserTaskJsonConverter extends BaseBpmnJsonConverter implements Form
         }
 
         task.setSkipExpression(getPropertyValueAsString(PROPERTY_SKIP_EXPRESSION, elementNode));
-
+        task.setContinuousStrategy(getPropertyValueAsString(PROPERTY_CONTINUOUS_STRATEGY, elementNode));
+        task.setSkipStrategy(getPropertyValueAsString(PROPERTY_SKIP_STRATEGY, elementNode));
+        task.setSkipStrategyExpression(getPropertyValueAsString(PROPERTY_SKIP_STRATEGY_EXPRESSION, elementNode));
+        task.setCompletionCondition(getPropertyValueAsString(PROPERTY_COMPLETION_CONDITION,elementNode));
+        task.setLoopCardinality(getPropertyValueAsString(PROPERTY_LOOPCARDINALITY,elementNode));
         convertJsonToFormProperties(elementNode, task);
         return task;
     }

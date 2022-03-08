@@ -321,6 +321,9 @@ public abstract class BaseBpmnJsonConverter implements EditorJsonConstants, Sten
                 activity.setNotExclusive(!getPropertyValueAsBoolean(PROPERTY_EXCLUSIVE, elementNode));
                 activity.setForCompensation(getPropertyValueAsBoolean(PROPERTY_FOR_COMPENSATION, elementNode));
                 String multiInstanceType = getPropertyValueAsString(PROPERTY_MULTIINSTANCE_TYPE, elementNode);
+                if (StringUtils.isBlank(multiInstanceType)) {
+                    multiInstanceType = getPropertyValueAsString(PROPERTY_SEQUENTIAL, elementNode);
+                }
                 String multiInstanceCardinality = getPropertyValueAsString(PROPERTY_MULTIINSTANCE_CARDINALITY, elementNode);
                 String multiInstanceCollection = getPropertyValueAsString(PROPERTY_MULTIINSTANCE_COLLECTION, elementNode);
                 String multiInstanceCondition = getPropertyValueAsString(PROPERTY_MULTIINSTANCE_CONDITION, elementNode);

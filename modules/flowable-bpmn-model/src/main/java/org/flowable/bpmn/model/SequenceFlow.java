@@ -22,11 +22,12 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
  * @author Joram Barrez
  */
 public class SequenceFlow extends FlowElement {
-
+    public static final String PROPERTY_MOST_HIGHEST_PRIORITY = "1";
     protected String conditionExpression;
     protected String sourceRef;
     protected String targetRef;
     protected String skipExpression;
+    protected String conditionPriority;
 
     // Actual flow elements that match the source and target ref
     // Set during process definition parsing
@@ -50,6 +51,14 @@ public class SequenceFlow extends FlowElement {
     public SequenceFlow(String sourceRef, String targetRef) {
         this.sourceRef = sourceRef;
         this.targetRef = targetRef;
+    }
+
+    public String getConditionPriority() {
+        return conditionPriority;
+    }
+
+    public void setConditionPriority(String conditionPriority) {
+        this.conditionPriority = conditionPriority;
     }
 
     public String getConditionExpression() {

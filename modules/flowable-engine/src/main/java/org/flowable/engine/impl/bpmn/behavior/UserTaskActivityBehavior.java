@@ -12,11 +12,7 @@
  */
 package org.flowable.engine.impl.bpmn.behavior;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 import org.apache.commons.lang3.StringUtils;
 import org.flowable.bpmn.model.UserTask;
@@ -30,6 +26,7 @@ import org.flowable.common.engine.impl.calendar.DueDateBusinessCalendar;
 import org.flowable.common.engine.impl.el.ExpressionManager;
 import org.flowable.common.engine.impl.interceptor.CommandContext;
 import org.flowable.engine.DynamicBpmnConstants;
+import org.flowable.engine.ManagementService;
 import org.flowable.engine.delegate.DelegateExecution;
 import org.flowable.engine.delegate.TaskListener;
 import org.flowable.engine.impl.bpmn.helper.SkipExpressionUtil;
@@ -82,6 +79,11 @@ public class UserTaskActivityBehavior extends TaskActivityBehavior {
         String activeTaskSkipExpression = null;
         String activeTaskAssignee = null;
         String activeTaskOwner = null;
+        String activeTaskContinuousStrategy = null;
+        String activeTaskSkipStrategy = null;
+        String activeTaskSkipStrategyExpression = null;
+
+
         List<String> activeTaskCandidateUsers = null;
         List<String> activeTaskCandidateGroups = null;
 
@@ -224,7 +226,7 @@ public class UserTaskActivityBehavior extends TaskActivityBehavior {
         // Handling assignments need to be done after the task is inserted, to have an id
         if (!skipUserTask) {
             handleAssignments(taskService, activeTaskAssignee, activeTaskOwner,
-                    activeTaskCandidateUsers, activeTaskCandidateGroups, task, expressionManager, execution);
+                    activeTaskCandidateUsers, activeTaskCandidateGroups, task, expressionManager, execution,activeTaskSkipStrategy,activeTaskSkipStrategyExpression);
             
             if (processEngineConfiguration.isEnableEntityLinks()) {
                 EntityLinkUtil.copyExistingEntityLinks(execution.getProcessInstanceId(), task.getId(), ScopeTypes.TASK);
@@ -259,7 +261,7 @@ public class UserTaskActivityBehavior extends TaskActivityBehavior {
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     protected void handleAssignments(TaskService taskService, String assignee, String owner, List<String> candidateUsers,
-            List<String> candidateGroups, TaskEntity task, ExpressionManager expressionManager, DelegateExecution execution) {
+            List<String> candidateGroups, TaskEntity task, ExpressionManager expressionManager, DelegateExecution execution, String approverNoStrategy, String approverNoExpression) {
 
         if (StringUtils.isNotEmpty(assignee)) {
             Object assigneeExpressionValue = expressionManager.createExpression(assignee).getValue(execution);
@@ -284,6 +286,7 @@ public class UserTaskActivityBehavior extends TaskActivityBehavior {
                 TaskHelper.changeTaskOwner(task, ownerValue);
             }
         }
+        boolean noCandidateUsers = true;
 
         if (candidateGroups != null && !candidateGroups.isEmpty()) {
             for (String candidateGroup : candidateGroups) {
@@ -302,6 +305,7 @@ public class UserTaskActivityBehavior extends TaskActivityBehavior {
                             IdentityLinkUtil.handleTaskIdentityLinkAdditions(task, identityLinkEntities);
                         }
                     }
+                    noCandidateUsers = false;
                 }
             }
         }
@@ -324,6 +328,7 @@ public class UserTaskActivityBehavior extends TaskActivityBehavior {
                         }
                         
                     }
+                    noCandidateUsers = false;
                 }
             }
         }
@@ -385,7 +390,42 @@ public class UserTaskActivityBehavior extends TaskActivityBehavior {
             }
 
         }
+        if (noCandidateUsers) {
+            dealApproverNoStrategy(task,expressionManager,execution,approverNoStrategy,approverNoExpression);
+        }
 
+    }
+
+    protected boolean dealApproverNoStrategy(TaskEntity task, ExpressionManager expressionManager, DelegateExecution execution, String approverNoStrategy, String approverNoExpression) {
+        //跳过
+        if ("0".equals(approverNoStrategy) || "true".equals(approverNoStrategy)) {
+            TaskHelper.deleteTask(task, null, false, false, false);
+            this.leave(execution);
+            return true;
+        } else if (StringUtils.isNotBlank(approverNoStrategy)) {
+            ManagementService managementService = CommandContextUtil.getProcessEngineConfiguration().getManagementService();
+            List<String> userList = new ArrayList<>();
+            Expression userIdExpr = expressionManager.createExpression(approverNoExpression);
+            Object value = userIdExpr.getValue(execution);
+            if (value != null) {
+                if (value instanceof Collection) {
+                    List<IdentityLinkEntity> identityLinkEntities = CommandContextUtil.getIdentityLinkService().addCandidateUsers(task.getId(), (Collection) value);
+                    IdentityLinkUtil.handleTaskIdentityLinkAdditions(task, identityLinkEntities);
+
+                } else {
+                    String strValue = value.toString();
+                    if (org.apache.commons.lang3.StringUtils.isNotEmpty(strValue)) {
+                        List<String> candidates = extractCandidates(strValue);
+                        List<IdentityLinkEntity> identityLinkEntities = CommandContextUtil.getIdentityLinkService().addCandidateUsers(task.getId(), candidates);
+                        IdentityLinkUtil.handleTaskIdentityLinkAdditions(task, identityLinkEntities);
+                    }
+
+                }
+            }
+            return true;
+            // 插入该环节的候选人
+        }
+        return false;
     }
 
     /**

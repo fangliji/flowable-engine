@@ -33,6 +33,7 @@ import org.activiti.engine.impl.pvm.delegate.SubProcessActivityBehavior;
 import org.activiti.engine.impl.pvm.process.ActivityImpl;
 import org.activiti.engine.impl.pvm.runtime.AtomicOperation;
 import org.activiti.engine.impl.pvm.runtime.InterpretableExecution;
+import org.flowable.bpmn.model.Activity;
 import org.flowable.common.engine.api.delegate.Expression;
 import org.flowable.engine.delegate.DelegateExecution;
 import org.flowable.engine.delegate.ExecutionListener;
@@ -71,6 +72,7 @@ public abstract class MultiInstanceActivityBehavior extends FlowNodeActivityBeha
     protected String collectionElementVariable;
     // default variable name for loop counter for inner instances (as described in the spec)
     protected String collectionElementIndexVariable = "loopCounter";
+    protected int index = 0;
 
     /**
      * @param activity
@@ -95,9 +97,12 @@ public abstract class MultiInstanceActivityBehavior extends FlowNodeActivityBeha
                 leave(activityExecution);
             }
         } else {
-            innerActivityBehavior.execute(execution);
+            // 这里要修改逻辑，修改为不走这里了，这里走下去又要每个都生成了日了狗的代码
+            innerActivityBehavior.multiInstanceExcute(execution,index);
+            index++;
         }
     }
+
 
     protected abstract void createInstances(ActivityExecution execution);
 
@@ -148,10 +153,12 @@ public abstract class MultiInstanceActivityBehavior extends FlowNodeActivityBeha
             }
             nrOfInstances = ((Collection) obj).size();
         } else {
-            throw new ActivitiIllegalArgumentException("Couldn't resolve collection expression nor variable reference");
+            // 获取候选人数量，去重后
+            nrOfInstances = innerActivityBehavior.getCandidateUsersNum(execution);
         }
         return nrOfInstances;
     }
+
 
     @SuppressWarnings("rawtypes")
     protected void executeOriginalBehavior(ActivityExecution execution, int loopCounter) {
