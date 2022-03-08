@@ -28,6 +28,10 @@ import org.flowable.engine.impl.persistence.entity.ExecutionEntity;
 import org.flowable.engine.impl.util.CommandContextUtil;
 import org.flowable.engine.impl.util.ProcessDefinitionUtil;
 
+import org.flowable.common.engine.api.delegate.Expression;
+import org.flowable.engine.delegate.DelegateExecution;
+import java.util.Set;
+
 /**
  * Denotes an 'activity' in the sense of BPMN 2.0: a parent class for all tasks, subprocess and callActivity.
  * 
@@ -38,6 +42,8 @@ public class AbstractBpmnActivityBehavior extends FlowNodeActivityBehavior {
     private static final long serialVersionUID = 1L;
 
     protected MultiInstanceActivityBehavior multiInstanceActivityBehavior;
+
+    protected List<String> cacheCandidateUsers = new ArrayList<>();
 
     /**
      * Subclasses that call leave() will first pass through this method, before the regular {@link FlowNodeActivityBehavior#leave(DelegateExecution)} is called. This way, we can check if the activity
@@ -55,6 +61,10 @@ public class AbstractBpmnActivityBehavior extends FlowNodeActivityBehavior {
         } else if (hasMultiInstanceCharacteristics()) {
             multiInstanceActivityBehavior.leave(execution);
         }
+    }
+
+    protected void multiInstanceExcute(DelegateExecution execution ,int index) {
+        // nothing
     }
 
     protected void executeCompensateBoundaryEvents(Collection<BoundaryEvent> boundaryEvents, DelegateExecution execution) {
@@ -114,6 +124,29 @@ public class AbstractBpmnActivityBehavior extends FlowNodeActivityBehavior {
 
     public void setMultiInstanceActivityBehavior(MultiInstanceActivityBehavior multiInstanceActivityBehavior) {
         this.multiInstanceActivityBehavior = multiInstanceActivityBehavior;
+    }
+
+
+    protected int getCandidateUsersNum(DelegateExecution execution) {
+        List<String> users = getCandidateUsers(execution);
+        if (users!=null)
+            if (cacheCandidateUsers!=null && !cacheCandidateUsers.isEmpty()) {
+                return  cacheCandidateUsers.size();
+            }
+        return 0;
+    }
+
+    private List<String> getCacheCandidateUsers(DelegateExecution execution) {
+        if (cacheCandidateUsers!=null && !cacheCandidateUsers.isEmpty()) {
+            return cacheCandidateUsers;
+        }
+        return getCandidateUsers(execution);
+    }
+
+    protected List<String> getCandidateUsers(DelegateExecution execution) {
+
+        return null;
+
     }
 
 }

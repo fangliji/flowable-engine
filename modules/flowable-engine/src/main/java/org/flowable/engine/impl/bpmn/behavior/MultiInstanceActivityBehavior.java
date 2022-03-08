@@ -93,6 +93,8 @@ public abstract class MultiInstanceActivityBehavior extends FlowNodeActivityBeha
     protected CollectionHandler collectionHandler;
     // default variable name for loop counter for inner instances (as described in the spec)
     protected String collectionElementIndexVariable = "loopCounter";
+    // 用于向下传递生成具体的审批人
+    protected int index = 0;
 
     /**
      * @param activity
@@ -127,7 +129,8 @@ public abstract class MultiInstanceActivityBehavior extends FlowNodeActivityBeha
             if (activity.isAsynchronous()) {
                 CommandContextUtil.getActivityInstanceEntityManager().recordActivityStart(execution);
             }
-            innerActivityBehavior.execute(execution);
+            innerActivityBehavior.multiInstanceExcute(execution,index);
+            index++;
         }
     }
 
@@ -300,7 +303,8 @@ public abstract class MultiInstanceActivityBehavior extends FlowNodeActivityBeha
             return collection.size();
 
         } else {
-            throw new FlowableIllegalArgumentException("Couldn't resolve collection expression nor variable reference");
+            // 获取候选人数量，去重后
+           return innerActivityBehavior.getCandidateUsersNum(execution);
         }
     }
 

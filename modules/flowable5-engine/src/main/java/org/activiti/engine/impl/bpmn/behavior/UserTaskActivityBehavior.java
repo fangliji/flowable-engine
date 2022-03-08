@@ -546,7 +546,8 @@ public class UserTaskActivityBehavior extends TaskActivityBehavior {
         return activeValues;
     }
 
-    protected List<String> getCandidateUsers (ActivityExecution execution) {
+
+    protected List<String> getCandidateUsers (DelegateExecution execution) {
         Set<String> candidateUserSet = new HashSet<>();
         Set<Expression> activeCandidateUserExpressions = null;
         if (Context.getProcessEngineConfiguration().isEnableProcessDefinitionInfoCache()) {

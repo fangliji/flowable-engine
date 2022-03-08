@@ -37,7 +37,7 @@ public class MultiInstanceParser extends BaseChildElementParser {
     public void parseChildElement(XMLStreamReader xtr, BaseElement parentElement, BpmnModel model) throws Exception {
         if (!(parentElement instanceof Activity))
             return;
-
+        //TODO 需要修改，需要修改
         MultiInstanceLoopCharacteristics multiInstanceDef = new MultiInstanceLoopCharacteristics();
         BpmnXMLUtil.addXMLLocation(multiInstanceDef, xtr);
         if (xtr.getAttributeValue(null, ATTRIBUTE_MULTIINSTANCE_SEQUENTIAL) != null) {
