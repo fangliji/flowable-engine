@@ -128,11 +128,10 @@ public class AbstractBpmnActivityBehavior extends FlowNodeActivityBehavior {
 
 
     protected int getCandidateUsersNum(DelegateExecution execution) {
-        List<String> users = getCandidateUsers(execution);
-        if (users!=null)
-            if (cacheCandidateUsers!=null && !cacheCandidateUsers.isEmpty()) {
-                return  cacheCandidateUsers.size();
-            }
+        List<String> users = getCacheCandidateUsers(execution);
+        if (users!=null) {
+            return users.size();
+        }
         return 0;
     }
 
@@ -140,7 +139,12 @@ public class AbstractBpmnActivityBehavior extends FlowNodeActivityBehavior {
         if (cacheCandidateUsers!=null && !cacheCandidateUsers.isEmpty()) {
             return cacheCandidateUsers;
         }
-        return getCandidateUsers(execution);
+        List<String> result = getCandidateUsers(execution);
+        if (result!=null && !result.isEmpty()) {
+            cacheCandidateUsers = result;
+            return result;
+        }
+        return null;
     }
 
     protected List<String> getCandidateUsers(DelegateExecution execution) {

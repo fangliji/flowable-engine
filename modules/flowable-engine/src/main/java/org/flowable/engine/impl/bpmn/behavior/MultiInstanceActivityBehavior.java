@@ -118,7 +118,10 @@ public abstract class MultiInstanceActivityBehavior extends FlowNodeActivityBeha
             } catch (BpmnError error) {
                 ErrorPropagation.propagateError(error, execution);
             }
-
+            if (nrOfInstances==-1) {
+                //TODO:需要走普通任务的走法
+                innerActivityBehavior.execute(execution);
+            }
             if (nrOfInstances == 0) {
                 cleanupMiRoot(execution);
             }

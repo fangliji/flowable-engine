@@ -44,8 +44,9 @@ public class SequentialMultiInstanceBehavior extends MultiInstanceActivityBehavi
         int nrOfInstances = resolveNrOfInstances(multiInstanceRootExecution);
         if (nrOfInstances == 0) {
             return nrOfInstances;
-        } else if (nrOfInstances < 0) {
-            throw new FlowableIllegalArgumentException("Invalid number of instances: must be a non-negative integer value" + ", but was " + nrOfInstances);
+        } else  if (nrOfInstances<=1) {
+            // 代表不走多实例，走普通userTask行为
+            return -1;
         }
 
         // Create child execution that will execute the inner behavior

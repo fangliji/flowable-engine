@@ -61,12 +61,13 @@ public class FlowElementValidator extends ProcessLevelValidator {
         MultiInstanceLoopCharacteristics multiInstanceLoopCharacteristics = activity.getLoopCharacteristics();
         if (multiInstanceLoopCharacteristics != null) {
 
-            if (StringUtils.isEmpty(multiInstanceLoopCharacteristics.getLoopCardinality())
+
+ /*           if (StringUtils.isEmpty(multiInstanceLoopCharacteristics.getLoopCardinality())
                     && StringUtils.isEmpty(multiInstanceLoopCharacteristics.getInputDataItem()) && StringUtils.isEmpty(multiInstanceLoopCharacteristics.getCollectionString())) {
 
                 addError(errors, Problems.MULTI_INSTANCE_MISSING_COLLECTION, process, activity,
                         "Either loopCardinality or loopDataInputRef/flowable:collection must been set");
-            }
+            }*/
             
             if (!StringUtils.isEmpty(multiInstanceLoopCharacteristics.getCollectionString())) {
 

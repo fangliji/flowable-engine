@@ -228,7 +228,7 @@ public class UserTaskActivityBehavior extends TaskActivityBehavior {
         // Handling assignments need to be done after the task is inserted, to have an id
         if (!skipUserTask) {
             handleAssignments(taskService, activeTaskAssignee, activeTaskOwner,
-                    activeTaskCandidateUsers, activeTaskCandidateGroups, task, expressionManager, execution,activeTaskSkipStrategy,activeTaskSkipStrategyExpression);
+                    activeTaskCandidateUsers, activeTaskCandidateGroups, task, expressionManager, execution);
             
             if (processEngineConfiguration.isEnableEntityLinks()) {
                 EntityLinkUtil.copyExistingEntityLinks(execution.getProcessInstanceId(), task.getId(), ScopeTypes.TASK);
@@ -263,7 +263,7 @@ public class UserTaskActivityBehavior extends TaskActivityBehavior {
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     protected void handleAssignments(TaskService taskService, String assignee, String owner, List<String> candidateUsers,
-            List<String> candidateGroups, TaskEntity task, ExpressionManager expressionManager, DelegateExecution execution, String approverNoStrategy, String approverNoExpression) {
+            List<String> candidateGroups, TaskEntity task, ExpressionManager expressionManager, DelegateExecution execution) {
 
         if (StringUtils.isNotEmpty(assignee)) {
             Object assigneeExpressionValue = expressionManager.createExpression(assignee).getValue(execution);
@@ -555,7 +555,7 @@ public class UserTaskActivityBehavior extends TaskActivityBehavior {
         // Handling assignments need to be done after the task is inserted, to have an id
         if (!skipUserTask) {
             handleAssignments(taskService, activeTaskAssignee, activeTaskOwner,
-                    activeTaskCandidateUsers, activeTaskCandidateGroups, task, expressionManager, execution,activeTaskSkipStrategy,activeTaskSkipStrategyExpression);
+                    activeTaskCandidateUsers, activeTaskCandidateGroups, task, expressionManager, execution);
 
             if (processEngineConfiguration.isEnableEntityLinks()) {
                 EntityLinkUtil.copyExistingEntityLinks(execution.getProcessInstanceId(), task.getId(), ScopeTypes.TASK);
