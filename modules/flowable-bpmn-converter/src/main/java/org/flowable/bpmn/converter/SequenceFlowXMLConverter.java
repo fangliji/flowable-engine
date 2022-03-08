@@ -44,7 +44,7 @@ public class SequenceFlowXMLConverter extends BaseBpmnXMLConverter {
         sequenceFlow.setTargetRef(xtr.getAttributeValue(null, ATTRIBUTE_FLOW_TARGET_REF));
         sequenceFlow.setName(xtr.getAttributeValue(null, ATTRIBUTE_NAME));
         sequenceFlow.setSkipExpression(xtr.getAttributeValue(null, ATTRIBUTE_FLOW_SKIP_EXPRESSION));
-
+        sequenceFlow.setConditionPriority(xtr.getAttributeValue(null,ATTRIBUTE_FLOW_CONDITION_PRIORITY));
         parseChildElements(getXMLElementName(), sequenceFlow, model, xtr);
 
         return sequenceFlow;
