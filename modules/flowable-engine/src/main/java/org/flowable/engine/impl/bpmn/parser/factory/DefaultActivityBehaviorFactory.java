@@ -54,53 +54,7 @@ import org.flowable.common.engine.api.FlowableException;
 import org.flowable.common.engine.api.delegate.Expression;
 import org.flowable.common.engine.impl.scripting.ScriptingEngines;
 import org.flowable.engine.delegate.BusinessRuleTaskDelegate;
-import org.flowable.engine.impl.bpmn.behavior.AbstractBpmnActivityBehavior;
-import org.flowable.engine.impl.bpmn.behavior.AdhocSubProcessActivityBehavior;
-import org.flowable.engine.impl.bpmn.behavior.BoundaryCancelEventActivityBehavior;
-import org.flowable.engine.impl.bpmn.behavior.BoundaryCompensateEventActivityBehavior;
-import org.flowable.engine.impl.bpmn.behavior.BoundaryEventActivityBehavior;
-import org.flowable.engine.impl.bpmn.behavior.BoundaryMessageEventActivityBehavior;
-import org.flowable.engine.impl.bpmn.behavior.BoundarySignalEventActivityBehavior;
-import org.flowable.engine.impl.bpmn.behavior.BoundaryTimerEventActivityBehavior;
-import org.flowable.engine.impl.bpmn.behavior.BusinessRuleTaskActivityBehavior;
-import org.flowable.engine.impl.bpmn.behavior.CallActivityBehavior;
-import org.flowable.engine.impl.bpmn.behavior.CancelEndEventActivityBehavior;
-import org.flowable.engine.impl.bpmn.behavior.CaseTaskActivityBehavior;
-import org.flowable.engine.impl.bpmn.behavior.DmnActivityBehavior;
-import org.flowable.engine.impl.bpmn.behavior.ErrorEndEventActivityBehavior;
-import org.flowable.engine.impl.bpmn.behavior.EventBasedGatewayActivityBehavior;
-import org.flowable.engine.impl.bpmn.behavior.EventSubProcessActivityBehavior;
-import org.flowable.engine.impl.bpmn.behavior.EventSubProcessErrorStartEventActivityBehavior;
-import org.flowable.engine.impl.bpmn.behavior.EventSubProcessMessageStartEventActivityBehavior;
-import org.flowable.engine.impl.bpmn.behavior.EventSubProcessSignalStartEventActivityBehavior;
-import org.flowable.engine.impl.bpmn.behavior.EventSubProcessTimerStartEventActivityBehavior;
-import org.flowable.engine.impl.bpmn.behavior.ExclusiveGatewayActivityBehavior;
-import org.flowable.engine.impl.bpmn.behavior.InclusiveGatewayActivityBehavior;
-import org.flowable.engine.impl.bpmn.behavior.IntermediateCatchEventActivityBehavior;
-import org.flowable.engine.impl.bpmn.behavior.IntermediateCatchMessageEventActivityBehavior;
-import org.flowable.engine.impl.bpmn.behavior.IntermediateCatchSignalEventActivityBehavior;
-import org.flowable.engine.impl.bpmn.behavior.IntermediateCatchTimerEventActivityBehavior;
-import org.flowable.engine.impl.bpmn.behavior.IntermediateThrowCompensationEventActivityBehavior;
-import org.flowable.engine.impl.bpmn.behavior.IntermediateThrowNoneEventActivityBehavior;
-import org.flowable.engine.impl.bpmn.behavior.IntermediateThrowSignalEventActivityBehavior;
-import org.flowable.engine.impl.bpmn.behavior.MailActivityBehavior;
-import org.flowable.engine.impl.bpmn.behavior.ManualTaskActivityBehavior;
-import org.flowable.engine.impl.bpmn.behavior.NoneEndEventActivityBehavior;
-import org.flowable.engine.impl.bpmn.behavior.NoneStartEventActivityBehavior;
-import org.flowable.engine.impl.bpmn.behavior.ParallelGatewayActivityBehavior;
-import org.flowable.engine.impl.bpmn.behavior.ParallelMultiInstanceBehavior;
-import org.flowable.engine.impl.bpmn.behavior.ReceiveTaskActivityBehavior;
-import org.flowable.engine.impl.bpmn.behavior.ScriptTaskActivityBehavior;
-import org.flowable.engine.impl.bpmn.behavior.SequentialMultiInstanceBehavior;
-import org.flowable.engine.impl.bpmn.behavior.ServiceTaskDelegateExpressionActivityBehavior;
-import org.flowable.engine.impl.bpmn.behavior.ServiceTaskExpressionActivityBehavior;
-import org.flowable.engine.impl.bpmn.behavior.ShellActivityBehavior;
-import org.flowable.engine.impl.bpmn.behavior.SubProcessActivityBehavior;
-import org.flowable.engine.impl.bpmn.behavior.TaskActivityBehavior;
-import org.flowable.engine.impl.bpmn.behavior.TerminateEndEventActivityBehavior;
-import org.flowable.engine.impl.bpmn.behavior.TransactionActivityBehavior;
-import org.flowable.engine.impl.bpmn.behavior.UserTaskActivityBehavior;
-import org.flowable.engine.impl.bpmn.behavior.WebServiceActivityBehavior;
+import org.flowable.engine.impl.bpmn.behavior.*;
 import org.flowable.engine.impl.bpmn.helper.ClassDelegate;
 import org.flowable.engine.impl.bpmn.helper.ClassDelegateFactory;
 import org.flowable.engine.impl.bpmn.helper.DefaultClassDelegateFactory;
@@ -416,6 +370,17 @@ public class DefaultActivityBehaviorFactory extends AbstractBehaviorFactory impl
     public ParallelMultiInstanceBehavior createParallelMultiInstanceBehavior(Activity activity, AbstractBpmnActivityBehavior innerActivityBehavior) {
         return new ParallelMultiInstanceBehavior(activity, innerActivityBehavior);
     }
+
+    @Override
+    public CustomSequentialMultiInstanceBehavior createCustomSequentialMultiInstanceBehavior(Activity activity, AbstractBpmnActivityBehavior innerActivityBehavior) {
+        return new CustomSequentialMultiInstanceBehavior(activity, innerActivityBehavior);
+    }
+
+    @Override
+    public  CustomParallelMultiInstanceBehavior createCustomParallelMultiInstanceBehavior(Activity activity, AbstractBpmnActivityBehavior innerActivityBehavior) {
+        return new CustomParallelMultiInstanceBehavior(activity,innerActivityBehavior);
+    }
+
 
     // Subprocess
 

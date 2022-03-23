@@ -15,11 +15,7 @@ package org.flowable.validation.validator.impl;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
-import org.flowable.bpmn.model.Activity;
-import org.flowable.bpmn.model.BpmnModel;
-import org.flowable.bpmn.model.DataAssociation;
-import org.flowable.bpmn.model.FlowElement;
-import org.flowable.bpmn.model.MultiInstanceLoopCharacteristics;
+import org.flowable.bpmn.model.*;
 import org.flowable.bpmn.model.Process;
 import org.flowable.validation.ValidationError;
 import org.flowable.validation.validator.Problems;
@@ -62,12 +58,12 @@ public class FlowElementValidator extends ProcessLevelValidator {
         if (multiInstanceLoopCharacteristics != null) {
 
 
- /*           if (StringUtils.isEmpty(multiInstanceLoopCharacteristics.getLoopCardinality())
+            if (StringUtils.isEmpty(multiInstanceLoopCharacteristics.getLoopCardinality())
                     && StringUtils.isEmpty(multiInstanceLoopCharacteristics.getInputDataItem()) && StringUtils.isEmpty(multiInstanceLoopCharacteristics.getCollectionString())) {
 
                 addError(errors, Problems.MULTI_INSTANCE_MISSING_COLLECTION, process, activity,
                         "Either loopCardinality or loopDataInputRef/flowable:collection must been set");
-            }*/
+            }
             
             if (!StringUtils.isEmpty(multiInstanceLoopCharacteristics.getCollectionString())) {
 
@@ -80,6 +76,7 @@ public class FlowElementValidator extends ProcessLevelValidator {
 
         }
     }
+
 
     protected void handleDataAssociations(Process process, Activity activity, List<ValidationError> errors) {
         if (activity.getDataInputAssociations() != null) {

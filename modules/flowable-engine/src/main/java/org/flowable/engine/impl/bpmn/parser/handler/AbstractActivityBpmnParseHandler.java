@@ -13,12 +13,10 @@
 package org.flowable.engine.impl.bpmn.parser.handler;
 
 import org.apache.commons.lang3.StringUtils;
-import org.flowable.bpmn.model.Activity;
-import org.flowable.bpmn.model.BaseElement;
-import org.flowable.bpmn.model.FlowNode;
-import org.flowable.bpmn.model.MultiInstanceLoopCharacteristics;
+import org.flowable.bpmn.model.*;
 import org.flowable.common.engine.impl.el.ExpressionManager;
 import org.flowable.engine.impl.bpmn.behavior.AbstractBpmnActivityBehavior;
+import org.flowable.engine.impl.bpmn.behavior.CustomMultiInstanceActivityBehavior;
 import org.flowable.engine.impl.bpmn.behavior.MultiInstanceActivityBehavior;
 import org.flowable.engine.impl.bpmn.parser.BpmnParse;
 import org.flowable.engine.impl.util.CommandContextUtil;
@@ -34,6 +32,10 @@ public abstract class AbstractActivityBpmnParseHandler<T extends FlowNode> exten
 
         if (element instanceof Activity && ((Activity) element).getLoopCharacteristics() != null) {
             createMultiInstanceLoopCharacteristics(bpmnParse, (Activity) element);
+        }
+
+        if (element instanceof Activity && ((Activity) element).getCustomLoopCharacteristics() != null) {
+            createCustomMultiInstanceLoopCharacteristics(bpmnParse,(Activity) element);
         }
     }
 
@@ -93,6 +95,38 @@ public abstract class AbstractActivityBpmnParseHandler<T extends FlowNode> exten
             miActivityBehavior = bpmnParse.getActivityBehaviorFactory().createParallelMultiInstanceBehavior(modelActivity, modelActivityBehavior);
         }
         
+        return miActivityBehavior;
+    }
+
+
+
+
+    protected void createCustomMultiInstanceLoopCharacteristics(BpmnParse bpmnParse, Activity modelActivity) {
+
+        CustomMultiInstanceLoopCharacteristics loopCharacteristics = modelActivity.getCustomLoopCharacteristics();
+
+        // Activity Behavior
+        CustomMultiInstanceActivityBehavior miActivityBehavior = createCustomMultiInstanceActivityBehavior(modelActivity, loopCharacteristics, bpmnParse);
+        modelActivity.setBehavior(miActivityBehavior);
+
+        ExpressionManager expressionManager = CommandContextUtil.getProcessEngineConfiguration().getExpressionManager();
+
+        // completion condition
+        if (StringUtils.isNotEmpty(loopCharacteristics.getCompletionCondition())) {
+            miActivityBehavior.setCompletionCondition(loopCharacteristics.getCompletionCondition());
+        }
+    }
+
+    protected CustomMultiInstanceActivityBehavior createCustomMultiInstanceActivityBehavior(Activity modelActivity, CustomMultiInstanceLoopCharacteristics loopCharacteristics, BpmnParse bpmnParse) {
+        CustomMultiInstanceActivityBehavior miActivityBehavior = null;
+
+        AbstractBpmnActivityBehavior modelActivityBehavior = (AbstractBpmnActivityBehavior) modelActivity.getBehavior();
+        if (loopCharacteristics.isSequential()) {
+            miActivityBehavior = bpmnParse.getActivityBehaviorFactory().createCustomSequentialMultiInstanceBehavior(modelActivity,modelActivityBehavior);
+        } else {
+            miActivityBehavior = bpmnParse.getActivityBehaviorFactory().createCustomParallelMultiInstanceBehavior(modelActivity, modelActivityBehavior);
+        }
+
         return miActivityBehavior;
     }
 }

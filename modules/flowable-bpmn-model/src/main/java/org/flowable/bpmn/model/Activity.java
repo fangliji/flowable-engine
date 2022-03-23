@@ -23,6 +23,7 @@ public abstract class Activity extends FlowNode {
     protected String defaultFlow;
     protected boolean forCompensation;
     protected MultiInstanceLoopCharacteristics loopCharacteristics;
+    protected CustomMultiInstanceLoopCharacteristics customLoopCharacteristics;
     protected IOSpecification ioSpecification;
     protected List<DataAssociation> dataInputAssociations = new ArrayList<>();
     protected List<DataAssociation> dataOutputAssociations = new ArrayList<>();
@@ -68,6 +69,14 @@ public abstract class Activity extends FlowNode {
 
     public void setLoopCharacteristics(MultiInstanceLoopCharacteristics loopCharacteristics) {
         this.loopCharacteristics = loopCharacteristics;
+    }
+
+    public CustomMultiInstanceLoopCharacteristics getCustomLoopCharacteristics() {
+        return customLoopCharacteristics;
+    }
+
+    public void setCustomLoopCharacteristics(CustomMultiInstanceLoopCharacteristics customLoopCharacteristics) {
+        this.customLoopCharacteristics = customLoopCharacteristics;
     }
 
     public boolean hasMultiInstanceLoopCharacteristics() {

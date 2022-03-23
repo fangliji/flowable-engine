@@ -13,21 +13,10 @@
 
 package org.flowable.engine.impl.bpmn.behavior;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
-import org.flowable.bpmn.model.Activity;
-import org.flowable.bpmn.model.BoundaryEvent;
-import org.flowable.bpmn.model.CollectionHandler;
-import org.flowable.bpmn.model.CompensateEventDefinition;
-import org.flowable.bpmn.model.FlowElement;
-import org.flowable.bpmn.model.FlowNode;
-import org.flowable.bpmn.model.ImplementationType;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.flowable.bpmn.model.Process;
+import org.flowable.bpmn.model.*;
 import org.flowable.common.engine.api.FlowableIllegalArgumentException;
 import org.flowable.common.engine.api.delegate.Expression;
 import org.flowable.common.engine.api.delegate.event.FlowableEngineEventType;
@@ -55,8 +44,7 @@ import org.flowable.engine.impl.util.ProcessDefinitionUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import java.util.*;
 
 /**
  * Implementation of the multi-instance functionality as described in the BPMN 2.0 spec.
@@ -64,23 +52,23 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
  * Multi instance functionality is implemented as an {@link ActivityBehavior} that wraps the original {@link ActivityBehavior} of the activity.
  * 
  * Only subclasses of {@link AbstractBpmnActivityBehavior} can have multi-instance behavior. As such, special logic is contained in the {@link AbstractBpmnActivityBehavior} to delegate to the
- * {@link MultiInstanceActivityBehavior} if needed.
+ * {@link CustomMultiInstanceActivityBehavior} if needed.
  * 
  * @author Joram Barrez
  * @author Tijs Rademakers
  */
-public abstract class MultiInstanceActivityBehavior extends FlowNodeActivityBehavior implements SubProcessActivityBehavior {
+public abstract class CustomMultiInstanceActivityBehavior extends FlowNodeActivityBehavior implements SubProcessActivityBehavior {
 
     private static final long serialVersionUID = 1L;
 
-    protected static final Logger LOGGER = LoggerFactory.getLogger(MultiInstanceActivityBehavior.class);
+    protected static final Logger LOGGER = LoggerFactory.getLogger(CustomMultiInstanceActivityBehavior.class);
     protected static final String DELETE_REASON_END = "MI_END";
 
     // Variable names for outer instance(as described in spec)
     protected final String NUMBER_OF_INSTANCES = "nrOfInstances";
     protected final String NUMBER_OF_ACTIVE_INSTANCES = "nrOfActiveInstances";
     protected final String NUMBER_OF_COMPLETED_INSTANCES = "nrOfCompletedInstances";
-
+    protected final String NUMBER_OF_CANDIDATEUSERS = "nrOfCandidateUsers";
     // Instance members
     protected Activity activity;
     protected AbstractBpmnActivityBehavior innerActivityBehavior;
@@ -93,13 +81,15 @@ public abstract class MultiInstanceActivityBehavior extends FlowNodeActivityBeha
     protected CollectionHandler collectionHandler;
     // default variable name for loop counter for inner instances (as described in the spec)
     protected String collectionElementIndexVariable = "loopCounter";
+    // 用于向下传递生成具体的审批人
+    protected int index = 0;
 
     /**
      * @param activity
      * @param innerActivityBehavior
      *            The original {@link ActivityBehavior} of the activity that will be wrapped inside this behavior.
      */
-    public MultiInstanceActivityBehavior(Activity activity, AbstractBpmnActivityBehavior innerActivityBehavior) {
+    public CustomMultiInstanceActivityBehavior(Activity activity, AbstractBpmnActivityBehavior innerActivityBehavior) {
         this.activity = activity;
         setInnerActivityBehavior(innerActivityBehavior);
     }
@@ -116,7 +106,10 @@ public abstract class MultiInstanceActivityBehavior extends FlowNodeActivityBeha
             } catch (BpmnError error) {
                 ErrorPropagation.propagateError(error, execution);
             }
-
+            if (nrOfInstances==-1) {
+                //TODO:需要走普通任务的走法
+                innerActivityBehavior.execute(execution);
+            }
             if (nrOfInstances == 0) {
                 cleanupMiRoot(execution);
             }
@@ -127,7 +120,8 @@ public abstract class MultiInstanceActivityBehavior extends FlowNodeActivityBeha
             if (activity.isAsynchronous()) {
                 CommandContextUtil.getActivityInstanceEntityManager().recordActivityStart(execution);
             }
-            innerActivityBehavior.execute(execution);
+            innerActivityBehavior.multiInstanceExcute(execution,index);
+            index++;
         }
     }
 
@@ -300,7 +294,11 @@ public abstract class MultiInstanceActivityBehavior extends FlowNodeActivityBeha
             return collection.size();
 
         } else {
-            throw new FlowableIllegalArgumentException("Couldn't resolve collection expression nor variable reference");
+            // 获取候选人数量，去重后
+            int candidateUsersNum = innerActivityBehavior.getCandidateUsersNum(execution);
+            // 设置进变量表，避免每次动态拿的人员值不一样，且缓存里面没有，人员也需要缓存，这个还麻烦，
+            setLoopVariable(execution, NUMBER_OF_CANDIDATEUSERS, candidateUsersNum);
+            return candidateUsersNum;
         }
     }
 
@@ -497,9 +495,15 @@ public abstract class MultiInstanceActivityBehavior extends FlowNodeActivityBeha
         this.loopCardinalityExpression = loopCardinalityExpression;
     }
 
+    public String getNumberOfCandidateusers(DelegateExecution execution){
+        Object object = execution.getVariableLocal(NUMBER_OF_CANDIDATEUSERS);
+        return  object == null?null:object.toString();
+    }
+
     public String getCompletionCondition() {
         return completionCondition;
     }
+
 
     public void setCompletionCondition(String completionCondition) {
         this.completionCondition = completionCondition;
@@ -555,7 +559,7 @@ public abstract class MultiInstanceActivityBehavior extends FlowNodeActivityBeha
 
     public void setInnerActivityBehavior(AbstractBpmnActivityBehavior innerActivityBehavior) {
         this.innerActivityBehavior = innerActivityBehavior;
-        this.innerActivityBehavior.setMultiInstanceActivityBehavior(this);
+        this.innerActivityBehavior.setCustomMultiInstanceActivityBehavior(this);
     }
 
     public AbstractBpmnActivityBehavior getInnerActivityBehavior() {

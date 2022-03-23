@@ -179,6 +179,10 @@ public interface BpmnXMLConstants {
     public static final String ATTRIBUTE_MULTIINSTANCE_COLLECTION_CLASS = "class";
     public static final String ATTRIBUTE_MULTIINSTANCE_COLLECTION_DELEGATEEXPRESSION = "delegateExpression";
 
+    public static final String CUSTOM_ELEMENT_MULTIINSTANCE = "customMultiInstanceLoopCharacteristics";
+    public static final String CUSTOM_ELEMENT_MULTIINSTANCE_CONDITION = "completionCondition";
+    public static final String CUSTOM_ATTRIBUTE_MULTIINSTANCE_SEQUENTIAL = "isSequential";
+
     public static final String ATTRIBUTE_TASK_IMPLEMENTATION = "implementation";
     public static final String ATTRIBUTE_TASK_OPERATION_REF = "operationRef";
 

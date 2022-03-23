@@ -12,18 +12,8 @@
  */
 package org.flowable.engine.impl.bpmn.behavior;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-
 import org.apache.commons.lang3.StringUtils;
-import org.flowable.bpmn.model.Activity;
-import org.flowable.bpmn.model.BoundaryEvent;
-import org.flowable.bpmn.model.CallActivity;
-import org.flowable.bpmn.model.CompensateEventDefinition;
-import org.flowable.bpmn.model.FlowElement;
-import org.flowable.bpmn.model.SubProcess;
-import org.flowable.bpmn.model.Transaction;
+import org.flowable.bpmn.model.*;
 import org.flowable.common.engine.api.FlowableIllegalArgumentException;
 import org.flowable.common.engine.impl.util.CollectionUtil;
 import org.flowable.engine.delegate.DelegateExecution;
@@ -33,15 +23,19 @@ import org.flowable.engine.impl.persistence.entity.ExecutionEntity;
 import org.flowable.engine.impl.persistence.entity.ExecutionEntityManager;
 import org.flowable.engine.impl.util.CommandContextUtil;
 
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+
 /**
  * @author Joram Barrez
  * @author Tijs Rademakers
  */
-public class ParallelMultiInstanceBehavior extends MultiInstanceActivityBehavior {
+public class CustomParallelMultiInstanceBehavior extends CustomMultiInstanceActivityBehavior {
 
     private static final long serialVersionUID = 1L;
 
-    public ParallelMultiInstanceBehavior(Activity activity, AbstractBpmnActivityBehavior originalActivityBehavior) {
+    public CustomParallelMultiInstanceBehavior(Activity activity, AbstractBpmnActivityBehavior originalActivityBehavior) {
         super(activity, originalActivityBehavior);
     }
 
@@ -53,6 +47,9 @@ public class ParallelMultiInstanceBehavior extends MultiInstanceActivityBehavior
         int nrOfInstances = resolveNrOfInstances(multiInstanceRootExecution);
         if (nrOfInstances < 0) {
             throw new FlowableIllegalArgumentException("Invalid number of instances: must be non-negative integer value" + ", but was " + nrOfInstances);
+        } else  if (nrOfInstances<=1) {
+            // 代表不走多实例，走普通userTask行为
+            return -1;
         }
 
         setLoopVariable(multiInstanceRootExecution, NUMBER_OF_INSTANCES, nrOfInstances);
@@ -109,6 +106,10 @@ public class ParallelMultiInstanceBehavior extends MultiInstanceActivityBehavior
             // Empty collection, just leave.
             zeroNrOfInstances = true;
             super.leave(execution); // Plan the default leave
+        } else if (resolveNrOfInstances(execution) == -1) {
+            // 如果是-1 则代表没有候选人，则直接走离开逻辑
+            innerActivityBehavior.leave(execution);
+            return;
         }
 
         int loopCounter = getLoopVariable(execution, getCollectionElementIndexVariable());

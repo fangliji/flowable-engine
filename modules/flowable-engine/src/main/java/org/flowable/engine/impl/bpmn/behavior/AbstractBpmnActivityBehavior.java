@@ -16,7 +16,9 @@ package org.flowable.engine.impl.bpmn.behavior;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Arrays;
 
+import org.apache.commons.lang3.StringUtils;
 import org.flowable.bpmn.model.BoundaryEvent;
 import org.flowable.bpmn.model.CompensateEventDefinition;
 import org.flowable.bpmn.model.FlowElement;
@@ -30,6 +32,8 @@ import org.flowable.engine.impl.util.ProcessDefinitionUtil;
 
 import org.flowable.common.engine.api.delegate.Expression;
 import org.flowable.engine.delegate.DelegateExecution;
+
+import javax.print.DocFlavor;
 import java.util.Set;
 
 /**
@@ -42,8 +46,10 @@ public class AbstractBpmnActivityBehavior extends FlowNodeActivityBehavior {
     private static final long serialVersionUID = 1L;
 
     protected MultiInstanceActivityBehavior multiInstanceActivityBehavior;
-
+    protected CustomMultiInstanceActivityBehavior customMultiInstanceActivityBehavior;
+    private static final String  MULTIINSTANCECACHEUSERS = "multiinstanceCacheUsers";
     protected List<String> cacheCandidateUsers = new ArrayList<>();
+
 
     /**
      * Subclasses that call leave() will first pass through this method, before the regular {@link FlowNodeActivityBehavior#leave(DelegateExecution)} is called. This way, we can check if the activity
@@ -56,11 +62,32 @@ public class AbstractBpmnActivityBehavior extends FlowNodeActivityBehavior {
         if (CollectionUtil.isNotEmpty(boundaryEvents)) {
             executeCompensateBoundaryEvents(boundaryEvents, execution);
         }
-        if (!hasLoopCharacteristics()) {
+        // 新增会签逻辑，如果会签实例数小于1个以下，还是走普通行为的
+        if (!hasLoopCharacteristics()  || !hasCustomLoopCharacteristics() || hasEnoughCadidateUser(execution)) {
             super.leave(execution);
         } else if (hasMultiInstanceCharacteristics()) {
             multiInstanceActivityBehavior.leave(execution);
+        } else if (hasCustomMultiInstanceCharacteristics()) {
+            customMultiInstanceActivityBehavior.leave(execution);
         }
+    }
+
+    /**
+     * 可能会签的实例数低于1
+     * @param execution
+     * @return
+     */
+    private boolean hasEnoughCadidateUser(DelegateExecution execution) {
+        if (customMultiInstanceActivityBehavior!=null) {
+            String numberOfCandidateUsers = customMultiInstanceActivityBehavior.getNumberOfCandidateusers(execution);
+            if (StringUtils.isNotBlank(numberOfCandidateUsers)) {
+                if (Integer.valueOf(numberOfCandidateUsers)>1) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        return false;
     }
 
     protected void multiInstanceExcute(DelegateExecution execution ,int index) {
@@ -115,8 +142,18 @@ public class AbstractBpmnActivityBehavior extends FlowNodeActivityBehavior {
     }
 
     protected boolean hasMultiInstanceCharacteristics() {
-        return multiInstanceActivityBehavior != null;
+        return multiInstanceActivityBehavior != null ;
     }
+
+    protected boolean hasCustomLoopCharacteristics() {
+        return hasCustomMultiInstanceCharacteristics();
+    }
+
+    protected boolean hasCustomMultiInstanceCharacteristics() {
+        return customMultiInstanceActivityBehavior != null ;
+    }
+
+
 
     public MultiInstanceActivityBehavior getMultiInstanceActivityBehavior() {
         return multiInstanceActivityBehavior;
@@ -130,18 +167,29 @@ public class AbstractBpmnActivityBehavior extends FlowNodeActivityBehavior {
     protected int getCandidateUsersNum(DelegateExecution execution) {
         List<String> users = getCacheCandidateUsers(execution);
         if (users!=null) {
-            return users.size();
+            return users.size()<=1?-1:users.size();
         }
-        return 0;
+        return -1;
+    }
+
+    protected List<String> extractCandidates(String str) {
+        return Arrays.asList(str.split("[\\s]*,[\\s]*"));
     }
 
     private List<String> getCacheCandidateUsers(DelegateExecution execution) {
-        if (cacheCandidateUsers!=null && !cacheCandidateUsers.isEmpty()) {
-            return cacheCandidateUsers;
+        Object cacheUserObject = execution.getVariableLocal(MULTIINSTANCECACHEUSERS);
+        if (cacheUserObject!=null) {
+             List<String> cachedUsers =  extractCandidates(cacheUserObject.toString());
+             if (cachedUsers!=null && !cachedUsers.isEmpty()) {
+                 cacheCandidateUsers = cachedUsers;
+                 return null;
+             }
         }
+        // 存变量表
         List<String> result = getCandidateUsers(execution);
         if (result!=null && !result.isEmpty()) {
             cacheCandidateUsers = result;
+            execution.setVariableLocal(MULTIINSTANCECACHEUSERS, StringUtils.join(result,","));
             return result;
         }
         return null;
@@ -153,4 +201,11 @@ public class AbstractBpmnActivityBehavior extends FlowNodeActivityBehavior {
 
     }
 
+    public CustomMultiInstanceActivityBehavior getCustomMultiInstanceActivityBehavior() {
+        return customMultiInstanceActivityBehavior;
+    }
+
+    public void setCustomMultiInstanceActivityBehavior(CustomMultiInstanceActivityBehavior customMultiInstanceActivityBehavior) {
+        this.customMultiInstanceActivityBehavior = customMultiInstanceActivityBehavior;
+    }
 }

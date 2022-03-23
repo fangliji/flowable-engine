@@ -47,6 +47,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.flowable.engine.impl.bpmn.data.ApproverNoStrategyProperties;
 
 /**
  * @author Joram Barrez
@@ -393,9 +394,10 @@ public class UserTaskActivityBehavior extends TaskActivityBehavior {
 
         }
         //TODO 审批人为空要修改
-       /* if (noCandidateUsers) {
-            dealApproverNoStrategy(task,expressionManager,execution,approverNoStrategy,approverNoExpression);
-        }*/
+        if (noCandidateUsers && !dealCustomCandidateUsers(task,expressionManager,execution)) {
+            dealApproverNoStrategy(task,expressionManager,execution);
+        }
+
     }
 
     protected void multiInstanceExcute(DelegateExecution execution,int index) {
@@ -583,22 +585,27 @@ public class UserTaskActivityBehavior extends TaskActivityBehavior {
         return  activeCandidateUserExpressions;
     }
 
-    protected boolean dealApproverNoStrategy(TaskEntity task, ExpressionManager expressionManager, DelegateExecution execution, String approverNoStrategy, String approverNoExpression) {
+    protected ApproverNoStrategyProperties getApproverNoStrategy() {
+        return  null;
+    }
+
+    private boolean dealApproverNoStrategy(TaskEntity task, ExpressionManager expressionManager, DelegateExecution execution) {
         //跳过
-        if ("0".equals(approverNoStrategy) || "true".equals(approverNoStrategy)) {
+        ApproverNoStrategyProperties approverNoStrategy = getApproverNoStrategy();
+        if (approverNoStrategy==null) {
+            return  false;
+        }
+        if ("0".equals(approverNoStrategy.getApproverNoStrategy()) || "true".equals(approverNoStrategy.getApproverNoStrategy())) {
             TaskHelper.deleteTask(task, null, false, false, false);
             this.leave(execution);
             return true;
-        } else if (StringUtils.isNotBlank(approverNoStrategy)) {
-            ManagementService managementService = CommandContextUtil.getProcessEngineConfiguration().getManagementService();
-            List<String> userList = new ArrayList<>();
-            Expression userIdExpr = expressionManager.createExpression(approverNoExpression);
+        } else if (StringUtils.isNotBlank(approverNoStrategy.getApproverNoStrategy())) {
+            Expression userIdExpr = expressionManager.createExpression(approverNoStrategy.getApproverNoExpression());
             Object value = userIdExpr.getValue(execution);
             if (value != null) {
                 if (value instanceof Collection) {
                     List<IdentityLinkEntity> identityLinkEntities = CommandContextUtil.getIdentityLinkService().addCandidateUsers(task.getId(), (Collection) value);
                     IdentityLinkUtil.handleTaskIdentityLinkAdditions(task, identityLinkEntities);
-
                 } else {
                     String strValue = value.toString();
                     if (org.apache.commons.lang3.StringUtils.isNotEmpty(strValue)) {
@@ -606,7 +613,6 @@ public class UserTaskActivityBehavior extends TaskActivityBehavior {
                         List<IdentityLinkEntity> identityLinkEntities = CommandContextUtil.getIdentityLinkService().addCandidateUsers(task.getId(), candidates);
                         IdentityLinkUtil.handleTaskIdentityLinkAdditions(task, identityLinkEntities);
                     }
-
                 }
             }
             return true;
@@ -614,6 +620,45 @@ public class UserTaskActivityBehavior extends TaskActivityBehavior {
         }
         return false;
     }
+
+    private Set<String> getApproverNoStrageyCandidateUsers(DelegateExecution execution) {
+        //跳过
+        ApproverNoStrategyProperties approverNoStrategy = getApproverNoStrategy();
+        if (approverNoStrategy==null) {
+            return  null;
+        }
+        if ("0".equals(approverNoStrategy.getApproverNoStrategy()) || "true".equals(approverNoStrategy.getApproverNoStrategy())) {
+            return null;
+        } else if (StringUtils.isNotBlank(approverNoStrategy.getApproverNoStrategy())) {
+            Set<String> candidateUsers = new HashSet<>();
+            CommandContext commandContext = CommandContextUtil.getCommandContext();
+            ProcessEngineConfigurationImpl processEngineConfiguration = CommandContextUtil.getProcessEngineConfiguration(commandContext);
+            ExpressionManager expressionManager = processEngineConfiguration.getExpressionManager();
+            Expression userIdExpr = expressionManager.createExpression(approverNoStrategy.getApproverNoExpression());
+            Object value = userIdExpr.getValue(execution);
+            if (value != null) {
+                if (value instanceof Collection) {
+                    for (Object candidateUser : (Collection)value) {
+                        if (candidateUser!=null) {
+                            candidateUsers.add(candidateUser.toString());
+                        }
+                    }
+                } else {
+                    String strValue = value.toString();
+                    if (org.apache.commons.lang3.StringUtils.isNotEmpty(strValue)) {
+                        List<String> candidates = extractCandidates(strValue);
+                        for (String candidateUser : candidates) {
+                            candidateUsers.add(candidateUser);
+                        }
+                    }
+                }
+            }
+            return candidateUsers;
+            // 插入该环节的候选人
+        }
+        return null;
+    }
+
 
     /**
      * Extract a candidate list from a string.
@@ -657,16 +702,28 @@ public class UserTaskActivityBehavior extends TaskActivityBehavior {
                 }
             }
         }
-        Set<String> otherCandidateUsers = getCustomCandidateUsers();
+        Set<String> otherCandidateUsers = getCustomCandidateUsers(execution);
         if (otherCandidateUsers!=null && !otherCandidateUsers.isEmpty()) {
             candidateUserSet.addAll(otherCandidateUsers);
+        }
+        if (candidateUserSet.isEmpty()) {
+            Set<String> approverNoCandidates = getApproverNoStrageyCandidateUsers(execution);
+            if (approverNoCandidates!=null && !approverNoCandidates.isEmpty()) {
+                candidateUserSet.addAll(approverNoCandidates);
+            }
         }
         // 处理内部数据
         return candidateUserSet.stream().collect(Collectors.toList());
     }
 
-    protected Set<String> getCustomCandidateUsers() {
-
+    protected Set<String> getCustomCandidateUsers(DelegateExecution execution) {
+        //doNothing 留个子类来实现
         return null;
+    }
+
+    protected boolean dealCustomCandidateUsers(TaskEntity task, ExpressionManager expressionManager, DelegateExecution execution) {
+        //doNothing 留个子类来实现
+        return false;
+
     }
 }
