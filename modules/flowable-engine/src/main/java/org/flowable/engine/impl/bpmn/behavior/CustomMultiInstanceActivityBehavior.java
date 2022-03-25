@@ -81,8 +81,8 @@ public abstract class CustomMultiInstanceActivityBehavior extends FlowNodeActivi
     protected CollectionHandler collectionHandler;
     // default variable name for loop counter for inner instances (as described in the spec)
     protected String collectionElementIndexVariable = "loopCounter";
-    // 用于向下传递生成具体的审批人
-    protected int index = 0;
+    protected String candidateUsersIndex = "loopCandidateUsersIndex";
+
 
     /**
      * @param activity
@@ -100,7 +100,8 @@ public abstract class CustomMultiInstanceActivityBehavior extends FlowNodeActivi
         if (getLocalLoopVariable(execution, getCollectionElementIndexVariable()) == null) {
 
             int nrOfInstances = 0;
-
+            //inited,怀疑这个对象是虚拟化了的，每次拿的是同一个
+            execution.setVariable(candidateUsersIndex,0);
             try {
                 nrOfInstances = createInstances(delegateExecution);
             } catch (BpmnError error) {
@@ -108,7 +109,10 @@ public abstract class CustomMultiInstanceActivityBehavior extends FlowNodeActivi
             }
             if (nrOfInstances==-1) {
                 //TODO:需要走普通任务的走法
-                innerActivityBehavior.execute(execution);
+                Object nrOfCandidateusers = execution.getVariableLocal(NUMBER_OF_CANDIDATEUSERS);
+                DelegateExecution execution1 = clearMulitRootExecution(execution);
+                setLoopVariable(execution1, NUMBER_OF_CANDIDATEUSERS,nrOfCandidateusers.toString() );
+                innerActivityBehavior.execute(execution1);
             }
             if (nrOfInstances == 0) {
                 cleanupMiRoot(execution);
@@ -120,8 +124,10 @@ public abstract class CustomMultiInstanceActivityBehavior extends FlowNodeActivi
             if (activity.isAsynchronous()) {
                 CommandContextUtil.getActivityInstanceEntityManager().recordActivityStart(execution);
             }
+            Integer index = Integer.valueOf(execution.getVariable(candidateUsersIndex).toString());
             innerActivityBehavior.multiInstanceExcute(execution,index);
-            index++;
+            ++index;
+            execution.setVariable(candidateUsersIndex,index);
         }
     }
 
@@ -150,6 +156,27 @@ public abstract class CustomMultiInstanceActivityBehavior extends FlowNodeActivi
         newExecution.setCurrentFlowElement(flowElement);
         super.leave(newExecution);
     }
+
+    protected DelegateExecution clearMulitRootExecution(DelegateExecution execution) {
+        // Delete multi instance root and all child executions.
+        // Create a fresh execution to continue
+
+        ExecutionEntity multiInstanceRootExecution = (ExecutionEntity) getMultiInstanceRootExecution(execution);
+        FlowElement flowElement = multiInstanceRootExecution.getCurrentFlowElement();
+        ExecutionEntity parentExecution = multiInstanceRootExecution.getParent();
+
+        ExecutionEntityManager executionEntityManager = CommandContextUtil.getExecutionEntityManager();
+        Collection<String> executionIdsNotToSendCancelledEventsFor = execution.isMultiInstanceRoot() ? null : Collections.singletonList(execution.getId());
+        executionEntityManager.deleteChildExecutions(multiInstanceRootExecution, null, executionIdsNotToSendCancelledEventsFor, DELETE_REASON_END, true, flowElement);
+        executionEntityManager.deleteRelatedDataForExecution(multiInstanceRootExecution, DELETE_REASON_END);
+        executionEntityManager.delete(multiInstanceRootExecution);
+
+        ExecutionEntity newExecution = executionEntityManager.createChildExecution(parentExecution);
+        newExecution.setCurrentFlowElement(flowElement);
+        return newExecution;
+
+    }
+
 
     protected void executeCompensationBoundaryEvents(FlowElement flowElement, DelegateExecution execution) {
 
@@ -276,7 +303,7 @@ public abstract class CustomMultiInstanceActivityBehavior extends FlowNodeActivi
     protected FlowableMultiInstanceActivityCompletedEvent buildCompletedEvent(DelegateExecution execution, FlowableEngineEventType eventType) {
         FlowElement flowNode = execution.getCurrentFlowElement();
 
-        return FlowableEventBuilder.createMultiInstanceActivityCompletedEvent(eventType,
+        return FlowableEventBuilder.createCustomMultiInstanceActivityCompletedEvent(eventType,
                 (int) execution.getVariable(NUMBER_OF_INSTANCES),
                 (int) execution.getVariable(NUMBER_OF_ACTIVE_INSTANCES),
                 (int) execution.getVariable(NUMBER_OF_COMPLETED_INSTANCES),
@@ -286,25 +313,17 @@ public abstract class CustomMultiInstanceActivityBehavior extends FlowNodeActivi
 
     @SuppressWarnings("rawtypes")
     protected int resolveNrOfInstances(DelegateExecution execution) {
-        if (loopCardinalityExpression != null) {
-            return resolveLoopCardinality(execution);
+        // 获取候选人数量，去重后
+        int candidateUsersNum = innerActivityBehavior.getCandidateUsersNum(execution);
+        // 设置进变量表，避免每次动态拿的人员值不一样，且缓存里面没有，人员也需要缓存，这个还麻烦，
+        setLoopVariable(execution, NUMBER_OF_CANDIDATEUSERS, candidateUsersNum);
+        return candidateUsersNum;
 
-        } else if (usesCollection()) {
-            Collection collection = resolveAndValidateCollection(execution);
-            return collection.size();
-
-        } else {
-            // 获取候选人数量，去重后
-            int candidateUsersNum = innerActivityBehavior.getCandidateUsersNum(execution);
-            // 设置进变量表，避免每次动态拿的人员值不一样，且缓存里面没有，人员也需要缓存，这个还麻烦，
-            setLoopVariable(execution, NUMBER_OF_CANDIDATEUSERS, candidateUsersNum);
-            return candidateUsersNum;
-        }
     }
 
     @SuppressWarnings("rawtypes")
     protected void executeOriginalBehavior(DelegateExecution execution, ExecutionEntity multiInstanceRootExecution, int loopCounter) {
-        if (usesCollection() && collectionElementVariable != null) {
+        /*if (usesCollection() && collectionElementVariable != null) {
             Collection collection = (Collection) resolveAndValidateCollection(execution);
 
             Object value = null;
@@ -315,7 +334,7 @@ public abstract class CustomMultiInstanceActivityBehavior extends FlowNodeActivi
                 index++;
             }
             setLoopVariable(execution, collectionElementVariable, value);
-        }
+        }*/
 
         execution.setCurrentFlowElement(activity);
         CommandContextUtil.getAgenda().planContinueMultiInstanceOperation((ExecutionEntity) execution, multiInstanceRootExecution, loopCounter);
@@ -496,7 +515,7 @@ public abstract class CustomMultiInstanceActivityBehavior extends FlowNodeActivi
     }
 
     public String getNumberOfCandidateusers(DelegateExecution execution){
-        Object object = execution.getVariableLocal(NUMBER_OF_CANDIDATEUSERS);
+        Object object = execution.getVariable(NUMBER_OF_CANDIDATEUSERS);
         return  object == null?null:object.toString();
     }
 

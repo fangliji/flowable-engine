@@ -63,7 +63,8 @@ public class AbstractBpmnActivityBehavior extends FlowNodeActivityBehavior {
             executeCompensateBoundaryEvents(boundaryEvents, execution);
         }
         // 新增会签逻辑，如果会签实例数小于1个以下，还是走普通行为的
-        if (!hasLoopCharacteristics()  || !hasCustomLoopCharacteristics() || hasEnoughCadidateUser(execution)) {
+        // 没有老的loop同事也不存在新的loop （或者新的loop）
+        if ((!hasLoopCharacteristics() && !hasCustomMultiInstanceCharacteristics()) || (hasCustomLoopCharacteristics() && !hasEnoughCadidateUser(execution))) {
             super.leave(execution);
         } else if (hasMultiInstanceCharacteristics()) {
             multiInstanceActivityBehavior.leave(execution);

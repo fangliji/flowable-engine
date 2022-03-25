@@ -23,6 +23,7 @@ import javax.xml.stream.XMLStreamWriter;
 import org.apache.commons.lang3.StringUtils;
 import org.flowable.bpmn.constants.BpmnXMLConstants;
 import org.flowable.bpmn.converter.child.BaseChildElementParser;
+import org.flowable.bpmn.converter.export.CustomMultiInstanceExport;
 import org.flowable.bpmn.converter.export.FailedJobRetryCountExport;
 import org.flowable.bpmn.converter.export.FlowableListenerExport;
 import org.flowable.bpmn.converter.export.MultiInstanceExport;
@@ -221,6 +222,7 @@ public abstract class BaseBpmnXMLConverter implements BpmnXMLConstants {
         if (baseElement instanceof Activity) {
             final Activity activity = (Activity) baseElement;
             MultiInstanceExport.writeMultiInstance(activity, model, xtw);
+            CustomMultiInstanceExport.writeMultiInstance(activity, model, xtw);
 
         }
 

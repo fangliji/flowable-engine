@@ -41,9 +41,7 @@ public class CustomSequentialMultiInstanceBehavior extends CustomMultiInstanceAc
     protected int createInstances(DelegateExecution multiInstanceRootExecution) {
 
         int nrOfInstances = resolveNrOfInstances(multiInstanceRootExecution);
-        if (nrOfInstances == 0) {
-            return nrOfInstances;
-        } else  if (nrOfInstances<=1) {
+        if (nrOfInstances<=0) {
             // 代表不走多实例，走普通userTask行为
             return -1;
         }

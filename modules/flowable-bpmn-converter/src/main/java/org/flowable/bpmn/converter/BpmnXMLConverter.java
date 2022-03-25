@@ -39,17 +39,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.flowable.bpmn.constants.BpmnXMLConstants;
 import org.flowable.bpmn.converter.alfresco.AlfrescoStartEventXMLConverter;
 import org.flowable.bpmn.converter.alfresco.AlfrescoUserTaskXMLConverter;
+import org.flowable.bpmn.converter.child.CustomMultiInstanceParser;
 import org.flowable.bpmn.converter.child.DocumentationParser;
 import org.flowable.bpmn.converter.child.IOSpecificationParser;
 import org.flowable.bpmn.converter.child.MultiInstanceParser;
-import org.flowable.bpmn.converter.export.BPMNDIExport;
-import org.flowable.bpmn.converter.export.CollaborationExport;
-import org.flowable.bpmn.converter.export.DataStoreExport;
-import org.flowable.bpmn.converter.export.DefinitionsRootExport;
-import org.flowable.bpmn.converter.export.FlowableListenerExport;
-import org.flowable.bpmn.converter.export.MultiInstanceExport;
-import org.flowable.bpmn.converter.export.ProcessExport;
-import org.flowable.bpmn.converter.export.SignalAndMessageDefinitionExport;
+import org.flowable.bpmn.converter.export.*;
 import org.flowable.bpmn.converter.parser.BpmnEdgeParser;
 import org.flowable.bpmn.converter.parser.BpmnShapeParser;
 import org.flowable.bpmn.converter.parser.DataStoreParser;
@@ -128,6 +122,7 @@ public class BpmnXMLConverter implements BpmnXMLConstants {
     protected MessageParser messageParser = new MessageParser();
     protected MessageFlowParser messageFlowParser = new MessageFlowParser();
     protected MultiInstanceParser multiInstanceParser = new MultiInstanceParser();
+    protected CustomMultiInstanceParser customMultiInstanceParser = new CustomMultiInstanceParser();
     protected ParticipantParser participantParser = new ParticipantParser();
     protected PotentialStarterParser potentialStarterParser = new PotentialStarterParser();
     protected ProcessParser processParser = new ProcessParser();
@@ -263,9 +258,9 @@ public class BpmnXMLConverter implements BpmnXMLConstants {
             try (InputStreamReader in = new InputStreamReader(inputStreamProvider.getInputStream(), encoding)) {
                 if (!enableSafeBpmnXml) {
                     validateModel(inputStreamProvider);
-                } else {
+                } /*else {
                     validateModel(xif.createXMLStreamReader(in));
-                }
+                }*/
             } catch (UnsupportedEncodingException e) {
                 throw new XMLException("The bpmn 2.0 xml is not properly encoded", e);
             } catch(XMLStreamException e){
@@ -414,6 +409,8 @@ public class BpmnXMLConverter implements BpmnXMLConstants {
 
                         multiInstanceParser.parseChildElement(xtr, activeSubProcessList.get(activeSubProcessList.size() - 1), model);
 
+                    } else if (!activeSubProcessList.isEmpty() && CUSTOM_ELEMENT_MULTIINSTANCE.equalsIgnoreCase(xtr.getLocalName()))  {
+                        customMultiInstanceParser.parseChildElement(xtr,activeSubProcessList.get(activeSubProcessList.size() - 1),model);
                     } else if (convertersToBpmnMap.containsKey(xtr.getLocalName())) {
                         if (activeProcess != null) {
                             BaseBpmnXMLConverter converter = convertersToBpmnMap.get(xtr.getLocalName());
@@ -601,7 +598,7 @@ public class BpmnXMLConverter implements BpmnXMLConstants {
             }
 
             MultiInstanceExport.writeMultiInstance(subProcess, model, xtw);
-
+            CustomMultiInstanceExport.writeMultiInstance(subProcess, model, xtw);
             if (subProcess instanceof AdhocSubProcess) {
                 AdhocSubProcess adhocSubProcess = (AdhocSubProcess) subProcess;
                 if (StringUtils.isNotEmpty(adhocSubProcess.getCompletionCondition())) {

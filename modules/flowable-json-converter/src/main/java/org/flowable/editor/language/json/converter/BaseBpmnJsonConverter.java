@@ -17,39 +17,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
-import org.flowable.bpmn.model.Activity;
-import org.flowable.bpmn.model.Artifact;
-import org.flowable.bpmn.model.Association;
-import org.flowable.bpmn.model.BaseElement;
-import org.flowable.bpmn.model.BoundaryEvent;
-import org.flowable.bpmn.model.BpmnModel;
-import org.flowable.bpmn.model.DataAssociation;
-import org.flowable.bpmn.model.DataStoreReference;
-import org.flowable.bpmn.model.ErrorEventDefinition;
-import org.flowable.bpmn.model.Event;
-import org.flowable.bpmn.model.EventDefinition;
-import org.flowable.bpmn.model.ExtensionElement;
-import org.flowable.bpmn.model.FieldExtension;
-import org.flowable.bpmn.model.FlowElement;
-import org.flowable.bpmn.model.FlowElementsContainer;
-import org.flowable.bpmn.model.FlowNode;
-import org.flowable.bpmn.model.FormProperty;
-import org.flowable.bpmn.model.FormValue;
-import org.flowable.bpmn.model.Gateway;
-import org.flowable.bpmn.model.GraphicInfo;
-import org.flowable.bpmn.model.Lane;
-import org.flowable.bpmn.model.MessageEventDefinition;
-import org.flowable.bpmn.model.MessageFlow;
-import org.flowable.bpmn.model.MultiInstanceLoopCharacteristics;
+import org.flowable.bpmn.model.*;
 import org.flowable.bpmn.model.Process;
-import org.flowable.bpmn.model.SequenceFlow;
-import org.flowable.bpmn.model.ServiceTask;
-import org.flowable.bpmn.model.SignalEventDefinition;
-import org.flowable.bpmn.model.StartEvent;
-import org.flowable.bpmn.model.SubProcess;
-import org.flowable.bpmn.model.TerminateEventDefinition;
-import org.flowable.bpmn.model.TimerEventDefinition;
-import org.flowable.bpmn.model.UserTask;
 import org.flowable.editor.constants.EditorJsonConstants;
 import org.flowable.editor.constants.StencilConstants;
 import org.flowable.editor.language.json.converter.util.CollectionUtils;
@@ -188,6 +157,17 @@ public abstract class BaseBpmnJsonConverter implements EditorJsonConstants, Sten
                         propertiesNode.put(PROPERTY_MULTIINSTANCE_CONDITION, loopDef.getCompletionCondition());
                     }
                 }
+            }
+            if (activity.getCustomLoopCharacteristics()!=null) {
+                CustomMultiInstanceLoopCharacteristics loopDef = activity.getCustomLoopCharacteristics();
+                    if (!loopDef.isSequential()) {
+                        propertiesNode.put(PROPERTY_CUSTOM_MULTIINSTANCE_TYPE, "Parallel");
+                    } else {
+                        propertiesNode.put(PROPERTY_CUSTOM_MULTIINSTANCE_TYPE, "Sequential");
+                    }
+                    if (StringUtils.isNotEmpty(loopDef.getCompletionCondition())) {
+                        propertiesNode.put(PROPERTY_CUSTOM_MULTIINSTANCE_CONDITION, loopDef.getCompletionCondition());
+                    }
             }
 
             if (activity instanceof UserTask) {
@@ -343,6 +323,21 @@ public abstract class BaseBpmnJsonConverter implements EditorJsonConstants, Sten
                     multiInstanceObject.setElementVariable(multiInstanceVariable);
                     multiInstanceObject.setCompletionCondition(multiInstanceCondition);
                     activity.setLoopCharacteristics(multiInstanceObject);
+                }
+                String customMultiInstanceType = getPropertyValueAsString(PROPERTY_CUSTOM_MULTIINSTANCE_TYPE, elementNode);
+                if (StringUtils.isBlank(customMultiInstanceType)) {
+                    customMultiInstanceType = getPropertyValueAsString(PROPERTY_SEQUENTIAL, elementNode);
+                }
+                String customMultiInstanceCondition = getPropertyValueAsString(PROPERTY_CUSTOM_MULTIINSTANCE_CONDITION, elementNode);
+                if (StringUtils.isNotEmpty(customMultiInstanceType) && !"none".equalsIgnoreCase(customMultiInstanceType)) {
+                    CustomMultiInstanceLoopCharacteristics multiInstanceObject = new CustomMultiInstanceLoopCharacteristics();
+                    if ("sequential".equalsIgnoreCase(customMultiInstanceType)) {
+                        multiInstanceObject.setSequential(true);
+                    } else {
+                        multiInstanceObject.setSequential(false);
+                    }
+                    multiInstanceObject.setCompletionCondition(customMultiInstanceCondition);
+                    activity.setCustomLoopCharacteristics(multiInstanceObject);
                 }
 
             } else if (baseElement instanceof Gateway) {

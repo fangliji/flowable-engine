@@ -295,6 +295,34 @@ public class FlowableEventBuilder {
         return newEvent;
     }
 
+    public static FlowableMultiInstanceActivityCompletedEvent createCustomMultiInstanceActivityCompletedEvent(FlowableEngineEventType type, int numberOfInstances,
+                                                                                                        int numberOfActiveInstances, int numberOfCompletedInstances, String activityId, String activityName, String executionId, String processInstanceId,
+                                                                                                        String processDefinitionId, FlowElement flowElement) {
+
+        FlowableMultiInstanceActivityCompletedEventImpl newEvent = new FlowableMultiInstanceActivityCompletedEventImpl(type);
+        newEvent.setNumberOfInstances(numberOfInstances);
+        newEvent.setNumberOfActiveInstances(numberOfActiveInstances);
+        newEvent.setNumberOfCompletedInstances(numberOfCompletedInstances);
+        newEvent.setActivityId(activityId);
+        newEvent.setActivityName(activityName);
+        newEvent.setExecutionId(executionId);
+        newEvent.setProcessDefinitionId(processDefinitionId);
+        newEvent.setProcessInstanceId(processInstanceId);
+
+        if (flowElement instanceof FlowNode) {
+            FlowNode flowNode = (FlowNode) flowElement;
+            newEvent.setActivityType(parseActivityType(flowNode));
+            Object behaviour = flowNode.getBehavior();
+            if (behaviour != null) {
+                newEvent.setBehaviorClass(behaviour.getClass().getCanonicalName());
+            }
+
+            newEvent.setSequential(((Activity) flowNode).getCustomLoopCharacteristics().isSequential());
+        }
+
+        return newEvent;
+    }
+
     protected static String parseActivityType(FlowNode flowNode) {
         String elementType = flowNode.getClass().getSimpleName();
         elementType = elementType.substring(0, 1).toLowerCase() + elementType.substring(1);

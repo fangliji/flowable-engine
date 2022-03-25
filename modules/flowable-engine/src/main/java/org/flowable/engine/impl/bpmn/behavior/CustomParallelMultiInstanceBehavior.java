@@ -45,9 +45,7 @@ public class CustomParallelMultiInstanceBehavior extends CustomMultiInstanceActi
     @Override
     protected int createInstances(DelegateExecution multiInstanceRootExecution) {
         int nrOfInstances = resolveNrOfInstances(multiInstanceRootExecution);
-        if (nrOfInstances < 0) {
-            throw new FlowableIllegalArgumentException("Invalid number of instances: must be non-negative integer value" + ", but was " + nrOfInstances);
-        } else  if (nrOfInstances<=1) {
+        if (nrOfInstances<=0) {
             // 代表不走多实例，走普通userTask行为
             return -1;
         }
@@ -106,10 +104,6 @@ public class CustomParallelMultiInstanceBehavior extends CustomMultiInstanceActi
             // Empty collection, just leave.
             zeroNrOfInstances = true;
             super.leave(execution); // Plan the default leave
-        } else if (resolveNrOfInstances(execution) == -1) {
-            // 如果是-1 则代表没有候选人，则直接走离开逻辑
-            innerActivityBehavior.leave(execution);
-            return;
         }
 
         int loopCounter = getLoopVariable(execution, getCollectionElementIndexVariable());

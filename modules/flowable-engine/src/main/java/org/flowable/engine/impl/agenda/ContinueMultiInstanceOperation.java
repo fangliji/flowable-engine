@@ -21,6 +21,7 @@ import org.flowable.common.engine.impl.util.CollectionUtil;
 import org.flowable.engine.delegate.BpmnError;
 import org.flowable.engine.delegate.ExecutionListener;
 import org.flowable.engine.delegate.event.impl.FlowableEventBuilder;
+import org.flowable.engine.impl.bpmn.behavior.CustomMultiInstanceActivityBehavior;
 import org.flowable.engine.impl.bpmn.behavior.MultiInstanceActivityBehavior;
 import org.flowable.engine.impl.bpmn.helper.ErrorPropagation;
 import org.flowable.engine.impl.cfg.ProcessEngineConfigurationImpl;
@@ -126,11 +127,17 @@ public class ContinueMultiInstanceOperation extends AbstractOperation {
     
     protected ActivityBehavior setLoopCounterVariable(FlowNode flowNode) {
         ActivityBehavior activityBehavior = (ActivityBehavior) flowNode.getBehavior();
-        if (!(activityBehavior instanceof MultiInstanceActivityBehavior)) {
+        if (!(activityBehavior instanceof MultiInstanceActivityBehavior) && !(activityBehavior instanceof CustomMultiInstanceActivityBehavior)) {
             throw new FlowableException("Programmatic error: expected multi instance activity behavior, but got " + activityBehavior.getClass());
         }
-        MultiInstanceActivityBehavior multiInstanceActivityBehavior = (MultiInstanceActivityBehavior) activityBehavior;
-        String elementIndexVariable = multiInstanceActivityBehavior.getCollectionElementIndexVariable();
+        String elementIndexVariable = null;
+        if (activityBehavior instanceof MultiInstanceActivityBehavior) {
+            MultiInstanceActivityBehavior multiInstanceActivityBehavior = (MultiInstanceActivityBehavior) activityBehavior;
+            elementIndexVariable = multiInstanceActivityBehavior.getCollectionElementIndexVariable();
+        } else {
+            CustomMultiInstanceActivityBehavior multiInstanceActivityBehavior = (CustomMultiInstanceActivityBehavior) activityBehavior;
+            elementIndexVariable = multiInstanceActivityBehavior.getCollectionElementIndexVariable();
+        }
         if (!flowNode.isAsynchronous()) {
             execution.setVariableLocal(elementIndexVariable, loopCounter);
         } else {

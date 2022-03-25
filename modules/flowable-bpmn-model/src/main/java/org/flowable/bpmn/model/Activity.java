@@ -83,6 +83,10 @@ public abstract class Activity extends FlowNode {
         return getLoopCharacteristics() != null;
     }
 
+    public boolean hasCustomMultiInstanceLoopCharacteristics() {
+        return getCustomLoopCharacteristics() != null;
+    }
+
     public IOSpecification getIoSpecification() {
         return ioSpecification;
     }
@@ -122,6 +126,9 @@ public abstract class Activity extends FlowNode {
         setForCompensation(otherActivity.isForCompensation());
         if (otherActivity.getLoopCharacteristics() != null) {
             setLoopCharacteristics(otherActivity.getLoopCharacteristics().clone());
+        }
+        if (otherActivity.getCustomLoopCharacteristics()!=null) {
+            setCustomLoopCharacteristics(otherActivity.getCustomLoopCharacteristics().clone());
         }
         if (otherActivity.getIoSpecification() != null) {
             setIoSpecification(otherActivity.getIoSpecification().clone());
