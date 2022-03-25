@@ -21,12 +21,6 @@ import org.activiti.engine.impl.pvm.PvmScope;
 import org.activiti.engine.impl.pvm.delegate.ActivityExecution;
 import org.activiti.engine.impl.pvm.process.ActivityImpl;
 import org.activiti.engine.impl.pvm.runtime.InterpretableExecution;
-import org.flowable.common.engine.api.delegate.Expression;
-import org.flowable.engine.delegate.DelegateExecution;
-
-import java.util.ArrayList;
-import java.util.Set;
-import java.util.List;
 
 /**
  * Denotes an 'activity' in the sense of BPMN 2.0: a parent class for all tasks, subprocess and callActivity.
@@ -36,7 +30,6 @@ import java.util.List;
 public class AbstractBpmnActivityBehavior extends FlowNodeActivityBehavior {
 
     protected MultiInstanceActivityBehavior multiInstanceActivityBehavior;
-    protected List<String> cacheCandidateUsers = new ArrayList<>();
 
     /**
      * Subclasses that call leave() will first pass through this method, before the regular {@link FlowNodeActivityBehavior#leave(ActivityExecution)} is called. This way, we can check if the activity
@@ -52,10 +45,6 @@ public class AbstractBpmnActivityBehavior extends FlowNodeActivityBehavior {
         } else if (hasMultiInstanceCharacteristics()) {
             multiInstanceActivityBehavior.leave(execution);
         }
-    }
-
-    protected void multiInstanceExcute(DelegateExecution execution ,int index) {
-        // nothing
     }
 
     protected boolean hasCompensationHandler(ActivityExecution execution) {
@@ -113,28 +102,6 @@ public class AbstractBpmnActivityBehavior extends FlowNodeActivityBehavior {
         } else {
             ((ExecutionEntity) execution).forceUpdate();
         }
-
-    }
-
-    protected int getCandidateUsersNum(ActivityExecution execution) {
-        List<String> users = getCandidateUsers(execution);
-        if (users!=null)
-        if (cacheCandidateUsers!=null && !cacheCandidateUsers.isEmpty()) {
-            return  cacheCandidateUsers.size();
-        }
-        return 0;
-    }
-
-    private List<String> getCacheCandidateUsers(ActivityExecution execution) {
-        if (cacheCandidateUsers!=null && !cacheCandidateUsers.isEmpty()) {
-            return cacheCandidateUsers;
-        }
-        return getCandidateUsers(execution);
-    }
-
-    protected List<String> getCandidateUsers(ActivityExecution execution) {
-
-        return null;
 
     }
 

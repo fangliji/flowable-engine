@@ -101,7 +101,7 @@ public abstract class CustomMultiInstanceActivityBehavior extends FlowNodeActivi
 
             int nrOfInstances = 0;
             //inited,怀疑这个对象是虚拟化了的，每次拿的是同一个
-            execution.setVariable(candidateUsersIndex,0);
+            setLoopVariable(getMultiInstanceRootExecution(execution),candidateUsersIndex,0);
             try {
                 nrOfInstances = createInstances(delegateExecution);
             } catch (BpmnError error) {
@@ -124,10 +124,11 @@ public abstract class CustomMultiInstanceActivityBehavior extends FlowNodeActivi
             if (activity.isAsynchronous()) {
                 CommandContextUtil.getActivityInstanceEntityManager().recordActivityStart(execution);
             }
-            Integer index = Integer.valueOf(execution.getVariable(candidateUsersIndex).toString());
+            Integer index = getLoopVariable(execution,candidateUsersIndex);
             innerActivityBehavior.multiInstanceExcute(execution,index);
             ++index;
-            execution.setVariable(candidateUsersIndex,index);
+            setLoopVariable(getMultiInstanceRootExecution(execution),candidateUsersIndex,index);
+
         }
     }
 
@@ -287,6 +288,7 @@ public abstract class CustomMultiInstanceActivityBehavior extends FlowNodeActivi
         return (Integer) (value != null ? value : 0);
     }
 
+
     // Helpers
     // //////////////////////////////////////////////////////////////////////
 
@@ -316,7 +318,7 @@ public abstract class CustomMultiInstanceActivityBehavior extends FlowNodeActivi
         // 获取候选人数量，去重后
         int candidateUsersNum = innerActivityBehavior.getCandidateUsersNum(execution);
         // 设置进变量表，避免每次动态拿的人员值不一样，且缓存里面没有，人员也需要缓存，这个还麻烦，
-        setLoopVariable(execution, NUMBER_OF_CANDIDATEUSERS, candidateUsersNum);
+        setLoopVariable(getMultiInstanceRootExecution(execution), NUMBER_OF_CANDIDATEUSERS, candidateUsersNum);
         return candidateUsersNum;
 
     }

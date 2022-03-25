@@ -48,7 +48,7 @@ public class AbstractBpmnActivityBehavior extends FlowNodeActivityBehavior {
     protected MultiInstanceActivityBehavior multiInstanceActivityBehavior;
     protected CustomMultiInstanceActivityBehavior customMultiInstanceActivityBehavior;
     private static final String  MULTIINSTANCECACHEUSERS = "multiinstanceCacheUsers";
-    protected List<String> cacheCandidateUsers = new ArrayList<>();
+
 
 
     /**
@@ -89,6 +89,17 @@ public class AbstractBpmnActivityBehavior extends FlowNodeActivityBehavior {
             return false;
         }
         return false;
+    }
+
+    protected String getCandidateUsersByIndex(DelegateExecution execution ,int index) {
+        Object cacheUserObject = this.customMultiInstanceActivityBehavior.getLocalLoopVariable(execution,MULTIINSTANCECACHEUSERS);
+        if (cacheUserObject!=null) {
+            List<String> cachedUsers =  extractCandidates(cacheUserObject.toString());
+            if (cachedUsers!=null && !cachedUsers.isEmpty()) {
+                return cachedUsers.get(index);
+            }
+        }
+        return null;
     }
 
     protected void multiInstanceExcute(DelegateExecution execution ,int index) {
@@ -178,19 +189,18 @@ public class AbstractBpmnActivityBehavior extends FlowNodeActivityBehavior {
     }
 
     private List<String> getCacheCandidateUsers(DelegateExecution execution) {
-        Object cacheUserObject = execution.getVariableLocal(MULTIINSTANCECACHEUSERS);
+        Object cacheUserObject = this.customMultiInstanceActivityBehavior.getLocalLoopVariable(execution,MULTIINSTANCECACHEUSERS);
         if (cacheUserObject!=null) {
              List<String> cachedUsers =  extractCandidates(cacheUserObject.toString());
              if (cachedUsers!=null && !cachedUsers.isEmpty()) {
-                 cacheCandidateUsers = cachedUsers;
-                 return null;
+                 return cachedUsers;
              }
         }
         // 存变量表
         List<String> result = getCandidateUsers(execution);
         if (result!=null && !result.isEmpty()) {
-            cacheCandidateUsers = result;
-            execution.setVariableLocal(MULTIINSTANCECACHEUSERS, StringUtils.join(result,","));
+
+            this.customMultiInstanceActivityBehavior.setLoopVariable(this.getCustomMultiInstanceActivityBehavior().getMultiInstanceRootExecution(execution),MULTIINSTANCECACHEUSERS, StringUtils.join(result,","));
             return result;
         }
         return null;

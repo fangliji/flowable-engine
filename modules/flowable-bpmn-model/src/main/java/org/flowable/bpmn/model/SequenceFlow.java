@@ -22,7 +22,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
  * @author Joram Barrez
  */
 public class SequenceFlow extends FlowElement {
-    public static final String PROPERTY_MOST_HIGHEST_PRIORITY = "1";
+
     protected String conditionExpression;
     protected String sourceRef;
     protected String targetRef;

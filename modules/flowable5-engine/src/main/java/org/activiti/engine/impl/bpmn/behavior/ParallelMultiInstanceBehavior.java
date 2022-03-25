@@ -78,7 +78,6 @@ public class ParallelMultiInstanceBehavior extends MultiInstanceActivityBehavior
                     && concurrentExecution.getParent().isActive()
                     && !concurrentExecution.getParent().isEnded()) {
                 setLoopVariable(concurrentExecution, getCollectionElementIndexVariable(), loopCounter);
-                // next deal candidateUsers
                 executeOriginalBehavior(concurrentExecution, loopCounter);
             }
         }

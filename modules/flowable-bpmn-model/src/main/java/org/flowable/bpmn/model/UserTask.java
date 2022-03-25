@@ -32,10 +32,6 @@ public class UserTask extends Task {
     protected String businessCalendarName;
     protected String category;
     protected String extensionId;
-  /*  protected String continuousStrategy;
-    protected String skipStrategy;
-    protected String skipStrategyExpression;
-    protected String sequential;*/
     protected List<String> candidateUsers = new ArrayList<>();
     protected List<String> candidateGroups = new ArrayList<>();
     protected List<FormProperty> formProperties = new ArrayList<>();
@@ -44,14 +40,6 @@ public class UserTask extends Task {
 
     protected Map<String, Set<String>> customUserIdentityLinks = new HashMap<>();
     protected Map<String, Set<String>> customGroupIdentityLinks = new HashMap<>();
-
-  /*  public String getSequential() {
-        return sequential;
-    }
-
-    public void setSequential(String sequential) {
-        this.sequential = sequential;
-    }*/
 
     protected List<CustomProperty> customProperties = new ArrayList<>();
 
@@ -209,30 +197,6 @@ public class UserTask extends Task {
         this.skipExpression = skipExpression;
     }
 
-   /* public String getContinuousStrategy() {
-        return continuousStrategy;
-    }
-
-    public void setContinuousStrategy(String continuousStrategy) {
-        this.continuousStrategy = continuousStrategy;
-    }
-
-    public String getSkipStrategy() {
-        return skipStrategy;
-    }
-
-    public void setSkipStrategy(String skipStrategy) {
-        this.skipStrategy = skipStrategy;
-    }
-
-    public String getSkipStrategyExpression() {
-        return skipStrategyExpression;
-    }
-
-    public void setSkipStrategyExpression(String skipStrategyExpression) {
-        this.skipStrategyExpression = skipStrategyExpression;
-    }*/
-
     @Override
     public UserTask clone() {
         UserTask clone = new UserTask();
@@ -250,9 +214,6 @@ public class UserTask extends Task {
         setCategory(otherElement.getCategory());
         setExtensionId(otherElement.getExtensionId());
         setSkipExpression(otherElement.getSkipExpression());
-      /*  setSkipStrategy(otherElement.getSkipStrategy());
-        setSkipStrategyExpression(otherElement.getSkipStrategyExpression());
-        setContinuousStrategy(otherElement.getContinuousStrategy());*/
 
         setCandidateGroups(new ArrayList<>(otherElement.getCandidateGroups()));
         setCandidateUsers(new ArrayList<>(otherElement.getCandidateUsers()));

@@ -82,11 +82,6 @@ public class UserTaskActivityBehavior extends TaskActivityBehavior {
         String activeTaskSkipExpression = null;
         String activeTaskAssignee = null;
         String activeTaskOwner = null;
-        String activeTaskContinuousStrategy = null;
-        String activeTaskSkipStrategy = null;
-        String activeTaskSkipStrategyExpression = null;
-
-
         List<String> activeTaskCandidateUsers = null;
         List<String> activeTaskCandidateGroups = null;
 
@@ -401,7 +396,7 @@ public class UserTaskActivityBehavior extends TaskActivityBehavior {
     }
 
     protected void multiInstanceExcute(DelegateExecution execution,int index) {
-        List<String> activeTaskCandidateUsers =  getOrderCandidateUserExpression(index);
+        List<String> activeTaskCandidateUsers =  getOrderCandidateUserExpression(execution,index);
         CommandContext commandContext = CommandContextUtil.getCommandContext();
         TaskService taskService = CommandContextUtil.getTaskService(commandContext);
 
@@ -578,9 +573,9 @@ public class UserTaskActivityBehavior extends TaskActivityBehavior {
         }
     }
 
-    private List<String> getOrderCandidateUserExpression(int index) {
+    private List<String> getOrderCandidateUserExpression(DelegateExecution execution, int index) {
         List<String> activeCandidateUserExpressions = new ArrayList<>();
-        String activeCandidateUserExpression =  cacheCandidateUsers.get(index);
+        String activeCandidateUserExpression =  getCandidateUsersByIndex(execution,index);
         activeCandidateUserExpressions.add(activeCandidateUserExpression);
         return  activeCandidateUserExpressions;
     }
