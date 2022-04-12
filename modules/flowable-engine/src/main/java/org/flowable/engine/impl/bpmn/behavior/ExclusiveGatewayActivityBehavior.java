@@ -86,7 +86,7 @@ public class ExclusiveGatewayActivityBehavior extends GatewayActivityBehavior {
                     if (priority==null || "".equals(priority)) {
                         outgoingSequenceFlow = sequenceFlow;
                         flag = false;
-                        continue;
+                        break;
                     }
                     if (initPriority ==null) {
                         initPriority = priority;

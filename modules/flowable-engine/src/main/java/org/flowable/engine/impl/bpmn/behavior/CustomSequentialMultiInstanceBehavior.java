@@ -22,6 +22,8 @@ import org.flowable.engine.impl.persistence.entity.ExecutionEntity;
 import org.flowable.engine.impl.persistence.entity.ExecutionEntityManager;
 import org.flowable.engine.impl.util.CommandContextUtil;
 
+import java.util.List;
+
 /**
  * @author Joram Barrez
  * @author Tijs Rademakers
@@ -62,6 +64,41 @@ public class CustomSequentialMultiInstanceBehavior extends CustomMultiInstanceAc
         }
 
         return nrOfInstances;
+    }
+
+    protected void dealAddSignatureExecution (DelegateExecution execution, List<String> candidateUsers) {
+        // nothing  留给子类
+
+
+    }
+
+    protected void dealSubSignatureExecution (DelegateExecution execution, List<String> candidateUsers) {
+        // nothing  留给子类
+        lockFirstParentScope(execution);
+        // step 3 重新设置实例总数变量，活跃变量数
+        int nrOfInstances = getLoopVariable(execution, NUMBER_OF_INSTANCES)- candidateUsers.size();
+        int loopCounter = getLoopVariable(execution, getCollectionElementIndexVariable());
+        int nrOfCompletedInstances = getLoopVariable(execution, NUMBER_OF_COMPLETED_INSTANCES) ;
+        int nrOfActiveInstances = getLoopVariable(execution, NUMBER_OF_ACTIVE_INSTANCES) - candidateUsers.size();
+        DelegateExecution miRootExecution = getMultiInstanceRootExecution(execution);
+        if (miRootExecution != null) { // will be null in case of empty collection
+            setLoopVariable(miRootExecution, NUMBER_OF_COMPLETED_INSTANCES, nrOfCompletedInstances);
+            setLoopVariable(miRootExecution, NUMBER_OF_ACTIVE_INSTANCES, nrOfActiveInstances);
+            setLoopVariable(miRootExecution, NUMBER_OF_INSTANCES,nrOfInstances);
+        }
+        ExecutionEntity executionEntity = (ExecutionEntity) execution;
+        boolean completeConditionSatisfied = completionConditionSatisfied(miRootExecution);
+        if (loopCounter >= nrOfInstances || completeConditionSatisfied) {
+            if(completeConditionSatisfied) {
+                sendCompletedWithConditionEvent(miRootExecution);
+            }
+            else {
+                sendCompletedEvent(miRootExecution);
+            }
+
+            super.leave(execution);
+        }
+
     }
 
     /**

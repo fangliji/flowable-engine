@@ -15,12 +15,14 @@ package org.flowable.engine.impl.bpmn.behavior;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.apache.commons.lang3.StringUtils;
 import org.flowable.bpmn.model.Process;
 import org.flowable.bpmn.model.*;
 import org.flowable.common.engine.api.FlowableIllegalArgumentException;
 import org.flowable.common.engine.api.delegate.Expression;
 import org.flowable.common.engine.api.delegate.event.FlowableEngineEventType;
 import org.flowable.common.engine.impl.el.ExpressionManager;
+import org.flowable.common.engine.impl.interceptor.CommandContext;
 import org.flowable.common.engine.impl.util.CollectionUtil;
 import org.flowable.engine.DynamicBpmnConstants;
 import org.flowable.engine.delegate.BpmnError;
@@ -40,11 +42,16 @@ import org.flowable.engine.impl.delegate.SubProcessActivityBehavior;
 import org.flowable.engine.impl.persistence.entity.ExecutionEntity;
 import org.flowable.engine.impl.persistence.entity.ExecutionEntityManager;
 import org.flowable.engine.impl.util.CommandContextUtil;
+import org.flowable.engine.impl.util.IdentityLinkUtil;
 import org.flowable.engine.impl.util.ProcessDefinitionUtil;
+import org.flowable.identitylink.service.impl.persistence.entity.IdentityLinkEntity;
+import org.flowable.task.service.TaskService;
+import org.flowable.task.service.impl.persistence.entity.TaskEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Implementation of the multi-instance functionality as described in the BPMN 2.0 spec.
@@ -424,21 +431,45 @@ public abstract class CustomMultiInstanceActivityBehavior extends FlowNodeActivi
         Map<String, Object> localVariables = execution.getVariablesLocal();
         if (localVariables.containsKey(variableName)) {
             return (Integer) execution.getVariableLocal(variableName);
-            
+
         } else if (!execution.isMultiInstanceRoot()) {
             DelegateExecution parentExecution = execution.getParent();
             localVariables = parentExecution.getVariablesLocal();
             if (localVariables.containsKey(variableName)) {
                 return (Integer) parentExecution.getVariableLocal(variableName);
-                
+
             } else if (!parentExecution.isMultiInstanceRoot()) {
                 DelegateExecution superExecution = parentExecution.getParent();
                 return (Integer) superExecution.getVariableLocal(variableName);
-                
+
             } else {
                 return null;
             }
-            
+
+        } else {
+            return null;
+        }
+    }
+
+    protected Object getLocalLoopVariableVal(DelegateExecution execution, String variableName) {
+        Map<String, Object> localVariables = execution.getVariablesLocal();
+        if (localVariables.containsKey(variableName)) {
+            return  execution.getVariableLocal(variableName);
+
+        } else if (!execution.isMultiInstanceRoot()) {
+            DelegateExecution parentExecution = execution.getParent();
+            localVariables = parentExecution.getVariablesLocal();
+            if (localVariables.containsKey(variableName)) {
+                return  parentExecution.getVariableLocal(variableName);
+
+            } else if (!parentExecution.isMultiInstanceRoot()) {
+                DelegateExecution superExecution = parentExecution.getParent();
+                return  superExecution.getVariableLocal(variableName);
+
+            } else {
+                return null;
+            }
+
         } else {
             return null;
         }
@@ -504,7 +535,151 @@ public abstract class CustomMultiInstanceActivityBehavior extends FlowNodeActivi
         }
         return collectionHandler;
     }
-    
+
+    /**
+     * 动态减签，并行加任务，并行减节点
+     * @param execution
+     * @param candidateUsers
+     * @return
+     */
+    protected boolean dynamicSubSignature (DelegateExecution execution,String candidateUsers) {
+        // step 1 获取多实例的执行根，从根上获取对应的变量，设置变量
+        DelegateExecution multiRoot = getMultiInstanceRootExecution (execution);
+        List<String> addCandidateUsers = analysisDynamicSubCandidateUser(multiRoot,candidateUsers);
+        // step 2 ,如果顺序签，则要判断当前的顺序在那个位置，现在只剩下一个人了
+        dealSubSignatureExecution(multiRoot,addCandidateUsers);
+        return false;
+
+    }
+
+    /**
+     * 生成加的执行链和任务，修改当前的缓存的人员数据，todo,修改流程定义的状态改节点编辑过，
+     * @param multiRoot
+     * @Param candidateUsers
+     */
+    protected void dealSubSignatureExecution (DelegateExecution multiRoot, List<String> candidateUsers) {
+        // nothing  留给子类
+
+
+    }
+
+
+
+    private List<String> analysisDynamicSubCandidateUser(DelegateExecution execution,String candidateUsers) {
+        List<String> candidateUsersList = this.innerActivityBehavior.getCacheCandidateUsers(execution);
+        List<String> candidates = getDynamicCandidateUser(execution,candidateUsers);
+        if (candidates!=null) {
+            if (!candidateUsersList.containsAll(candidates)) {
+                throw new FlowableIllegalArgumentException("减签人员在当前审批人员中！candidateUsers:"+StringUtils.join(candidateUsersList,","));
+            }
+            candidateUsersList.removeAll(candidates);
+            if (candidateUsersList.isEmpty()) {
+                throw new FlowableIllegalArgumentException("减签至少保留一个人员！candidateUsers:"+StringUtils.join(candidateUsersList,","));
+            }
+        }
+        setLoopVariable(execution,AbstractBpmnActivityBehavior.MULTIINSTANCECACHEUSERS,StringUtils.join(candidateUsersList,","));
+        return candidateUsersList;
+    }
+
+    /**
+     * 动态加签 分为两种，运行时多实例，加任务，也阔以加节点
+     * @return
+     */
+    protected boolean dynamicAddSignature (DelegateExecution execution,String candidateUsers) {
+        // step 1 获取 多实例的执行根，从跟上获取对应的变量，设置变量
+        DelegateExecution multiRoot = getMultiInstanceRootExecution (execution);
+        // step 2 解析 人员数量，修改变量中的缓存人员数量
+        List<String> addCandidateUsers = analysisDynamicAddCandidateUser(multiRoot,candidateUsers);
+        if (addCandidateUsers == null) {
+            throw new FlowableIllegalArgumentException("加签人员不能为空！candidateUsers:"+candidateUsers);
+        }
+        // step 3 重新设置实例总数变量，活跃变量数
+        int nrOfInstances = getLoopVariable(execution, NUMBER_OF_INSTANCES)+ addCandidateUsers.size();
+        int nrOfCompletedInstances = getLoopVariable(execution, NUMBER_OF_COMPLETED_INSTANCES) ;
+        int nrOfActiveInstances = getLoopVariable(execution, NUMBER_OF_ACTIVE_INSTANCES) + addCandidateUsers.size();
+        if (multiRoot != null) { // will be null in case of empty collection
+            setLoopVariable(multiRoot, NUMBER_OF_COMPLETED_INSTANCES, nrOfCompletedInstances);
+            setLoopVariable(multiRoot, NUMBER_OF_ACTIVE_INSTANCES, nrOfActiveInstances);
+            setLoopVariable(multiRoot, NUMBER_OF_INSTANCES,nrOfInstances);
+        }
+        // step 4 lockParentScope
+        ExecutionEntity executionEntity = (ExecutionEntity) execution;
+        if (executionEntity.getParent() != null) {
+            executionEntity.inactivate();
+            lockFirstParentScope(executionEntity);
+            // step 5 生成任务 和子执行链
+            dealAddSignatureExecution (multiRoot,addCandidateUsers);
+        }
+        return false;
+    }
+
+    /**
+     * 生成加的执行链和任务，修改当前的缓存的人员数据，todo,修改流程定义的状态改节点编辑过，
+     * @param multiRoot
+     * @Param candidateUsers
+     */
+    protected void dealAddSignatureExecution (DelegateExecution multiRoot, List<String> candidateUsers) {
+      // nothing  留给子类
+
+
+
+    }
+
+
+    protected void lockFirstParentScope(DelegateExecution execution) {
+
+        ExecutionEntityManager executionEntityManager = CommandContextUtil.getExecutionEntityManager();
+
+        boolean found = false;
+        ExecutionEntity parentScopeExecution = null;
+        ExecutionEntity currentExecution = (ExecutionEntity) execution;
+        while (!found && currentExecution != null && currentExecution.getParentId() != null) {
+            parentScopeExecution = executionEntityManager.findById(currentExecution.getParentId());
+            if (parentScopeExecution != null && parentScopeExecution.isScope()) {
+                found = true;
+            }
+            currentExecution = parentScopeExecution;
+        }
+
+        parentScopeExecution.forceUpdate();
+    }
+
+
+    private List<String> analysisDynamicAddCandidateUser(DelegateExecution execution, String candidateUsers) {
+        List<String> candidateUsersList = this.innerActivityBehavior.getCacheCandidateUsers(execution);
+        List<String> candidates = getDynamicCandidateUser(execution,candidateUsers);
+        if (candidates!=null) {
+            candidateUsersList.addAll(candidates);
+        }
+        setLoopVariable(execution,AbstractBpmnActivityBehavior.MULTIINSTANCECACHEUSERS,StringUtils.join(candidateUsersList,","));
+        return candidates;
+    }
+
+    private List<String> getDynamicCandidateUser(DelegateExecution execution, String candidateUsers) {
+        CommandContext commandContext = CommandContextUtil.getCommandContext();
+        ProcessEngineConfigurationImpl processEngineConfiguration = CommandContextUtil.getProcessEngineConfiguration(commandContext);
+        ExpressionManager expressionManager = processEngineConfiguration.getExpressionManager();
+        Expression userIdExpr = expressionManager.createExpression(candidateUsers);
+        Object value = userIdExpr.getValue(execution);
+        if (value != null) {
+            List<String> candidates = null;
+            if (value instanceof Collection) {
+                Collection collection = (Collection)value;
+                List<Object> list = Collections.EMPTY_LIST;
+                list.addAll(collection);
+                candidates = list.stream().distinct().collect(Collectors.mapping(o->o.toString(),Collectors.toList()));
+            } else {
+                String strValue = value.toString();
+                if (StringUtils.isNotEmpty(strValue)) {
+                    candidates = this.innerActivityBehavior.extractCandidates(strValue);
+                    candidates = candidates.stream().distinct().collect(Collectors.toList());
+                }
+            }
+            return candidates;
+        }
+        return null;
+    }
+
     // Getters and Setters
     // ///////////////////////////////////////////////////////////
 

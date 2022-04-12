@@ -15,6 +15,7 @@ package org.flowable.engine.impl.bpmn.behavior;
 import org.apache.commons.lang3.StringUtils;
 import org.flowable.bpmn.model.*;
 import org.flowable.common.engine.api.FlowableIllegalArgumentException;
+import org.flowable.common.engine.impl.interceptor.CommandContext;
 import org.flowable.common.engine.impl.util.CollectionUtil;
 import org.flowable.engine.delegate.DelegateExecution;
 import org.flowable.engine.impl.bpmn.helper.ScopeUtil;
@@ -22,6 +23,8 @@ import org.flowable.engine.impl.delegate.ActivityBehavior;
 import org.flowable.engine.impl.persistence.entity.ExecutionEntity;
 import org.flowable.engine.impl.persistence.entity.ExecutionEntityManager;
 import org.flowable.engine.impl.util.CommandContextUtil;
+import org.flowable.task.service.TaskService;
+import org.flowable.task.service.impl.persistence.entity.TaskEntity;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -91,6 +94,81 @@ public class CustomParallelMultiInstanceBehavior extends CustomMultiInstanceActi
         }
 
         return nrOfInstances;
+    }
+
+    protected void dealAddSignatureExecution (DelegateExecution multiRoot, List<String> candidateUsers) {
+        // nothing  留给子类
+        List<ExecutionEntity> concurrentExecutions = new ArrayList<>();
+        for (int loopCounter = 0; loopCounter < candidateUsers.size(); loopCounter++) {
+            ExecutionEntity concurrentExecution = CommandContextUtil.getExecutionEntityManager()
+                    .createChildExecution((ExecutionEntity) multiRoot);
+            concurrentExecution.setCurrentFlowElement(activity);
+            concurrentExecution.setActive(true);
+            concurrentExecution.setScope(false);
+            concurrentExecutions.add(concurrentExecution);
+            //CommandContextUtil.getHistoryManager().recordActivityStart(concurrentExecution);
+        }
+        for (int loopCounter = 0; loopCounter < candidateUsers.size(); loopCounter++) {
+            ExecutionEntity concurrentExecution = concurrentExecutions.get(loopCounter);
+            // executions can be inactive, if instances are all automatics
+            // (no-waitstate) and completionCondition has been met in the meantime
+            if (concurrentExecution.isActive()
+                    && !concurrentExecution.isEnded()
+                    && !concurrentExecution.getParent().isEnded()) {
+                executeOriginalBehavior(concurrentExecution, (ExecutionEntity) multiRoot, loopCounter);
+            }
+        }
+    }
+
+    protected void dealSubSignatureExecution (DelegateExecution execution, List<String> candidateUsers) {
+        lockFirstParentScope(execution);
+        // step 3 重新设置实例总数变量，活跃变量数
+        int nrOfInstances = getLoopVariable(execution, NUMBER_OF_INSTANCES)- candidateUsers.size();
+        int nrOfCompletedInstances = getLoopVariable(execution, NUMBER_OF_COMPLETED_INSTANCES) ;
+        int nrOfActiveInstances = getLoopVariable(execution, NUMBER_OF_ACTIVE_INSTANCES) - candidateUsers.size();
+        DelegateExecution miRootExecution = getMultiInstanceRootExecution(execution);
+        if (miRootExecution != null) { // will be null in case of empty collection
+            setLoopVariable(miRootExecution, NUMBER_OF_COMPLETED_INSTANCES, nrOfCompletedInstances);
+            setLoopVariable(miRootExecution, NUMBER_OF_ACTIVE_INSTANCES, nrOfActiveInstances);
+            setLoopVariable(miRootExecution, NUMBER_OF_INSTANCES,nrOfInstances);
+        }
+        ExecutionEntity executionEntity = (ExecutionEntity) execution;
+        if (executionEntity.getParent() != null) {
+            executionEntity.inactivate();
+            boolean isCompletionConditionSatisfied = completionConditionSatisfied(execution.getParent());
+            if (nrOfCompletedInstances >= nrOfInstances || isCompletionConditionSatisfied) {
+                ExecutionEntity leavingExecution = null;
+                if (nrOfInstances > 0) {
+                    leavingExecution = executionEntity.getParent();
+                } else {
+                    CommandContextUtil.getActivityInstanceEntityManager().recordActivityEnd((ExecutionEntity) execution, null);
+                    leavingExecution = executionEntity;
+                }
+
+                Activity activity = (Activity) execution.getCurrentFlowElement();
+                verifyCompensation(execution, leavingExecution, activity);
+                verifyCallActivity(leavingExecution, activity);
+
+                if (isCompletionConditionSatisfied) {
+                    LinkedList<DelegateExecution> toVerify = new LinkedList<>(miRootExecution.getExecutions());
+                    while (!toVerify.isEmpty()) {
+                        DelegateExecution childExecution = toVerify.pop();
+                        if (((ExecutionEntity) childExecution).isInserted()) {
+                            childExecution.inactivate();
+                        }
+
+                        List<DelegateExecution> childExecutions = (List<DelegateExecution>) childExecution.getExecutions();
+                        if (childExecutions != null && !childExecutions.isEmpty()) {
+                            toVerify.addAll(childExecutions);
+                        }
+                    }
+                    sendCompletedWithConditionEvent(leavingExecution);
+                } else {
+                    sendCompletedEvent(leavingExecution);
+                }
+                super.leave(leavingExecution);
+            }
+        }
     }
 
     /**

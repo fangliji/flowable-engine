@@ -47,7 +47,7 @@ public class AbstractBpmnActivityBehavior extends FlowNodeActivityBehavior {
 
     protected MultiInstanceActivityBehavior multiInstanceActivityBehavior;
     protected CustomMultiInstanceActivityBehavior customMultiInstanceActivityBehavior;
-    private static final String  MULTIINSTANCECACHEUSERS = "multiinstanceCacheUsers";
+    public static final String  MULTIINSTANCECACHEUSERS = "multiinstanceCacheUsers";
 
 
 
@@ -92,7 +92,7 @@ public class AbstractBpmnActivityBehavior extends FlowNodeActivityBehavior {
     }
 
     protected String getCandidateUsersByIndex(DelegateExecution execution ,int index) {
-        Object cacheUserObject = this.customMultiInstanceActivityBehavior.getLocalLoopVariable(execution,MULTIINSTANCECACHEUSERS);
+        Object cacheUserObject = this.customMultiInstanceActivityBehavior.getLocalLoopVariableVal(execution,MULTIINSTANCECACHEUSERS);
         if (cacheUserObject!=null) {
             List<String> cachedUsers =  extractCandidates(cacheUserObject.toString());
             if (cachedUsers!=null && !cachedUsers.isEmpty()) {
@@ -188,8 +188,8 @@ public class AbstractBpmnActivityBehavior extends FlowNodeActivityBehavior {
         return Arrays.asList(str.split("[\\s]*,[\\s]*"));
     }
 
-    private List<String> getCacheCandidateUsers(DelegateExecution execution) {
-        Object cacheUserObject = this.customMultiInstanceActivityBehavior.getLocalLoopVariable(execution,MULTIINSTANCECACHEUSERS);
+    public List<String> getCacheCandidateUsers(DelegateExecution execution) {
+        Object cacheUserObject = this.customMultiInstanceActivityBehavior.getLocalLoopVariableVal(execution,MULTIINSTANCECACHEUSERS);
         if (cacheUserObject!=null) {
              List<String> cachedUsers =  extractCandidates(cacheUserObject.toString());
              if (cachedUsers!=null && !cachedUsers.isEmpty()) {

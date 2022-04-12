@@ -573,7 +573,7 @@ public class UserTaskActivityBehavior extends TaskActivityBehavior {
         }
     }
 
-    private List<String> getOrderCandidateUserExpression(DelegateExecution execution, int index) {
+    public List<String> getOrderCandidateUserExpression(DelegateExecution execution, int index) {
         List<String> activeCandidateUserExpressions = new ArrayList<>();
         String activeCandidateUserExpression =  getCandidateUsersByIndex(execution,index);
         activeCandidateUserExpressions.add(activeCandidateUserExpression);
