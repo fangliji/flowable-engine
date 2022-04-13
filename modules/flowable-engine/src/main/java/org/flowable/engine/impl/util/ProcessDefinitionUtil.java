@@ -12,17 +12,24 @@
  */
 package org.flowable.engine.impl.util;
 
+import org.flowable.bpmn.converter.BpmnXMLConverter;
 import org.flowable.bpmn.model.BpmnModel;
 import org.flowable.bpmn.model.Process;
 import org.flowable.common.engine.api.FlowableException;
 import org.flowable.common.engine.api.FlowableObjectNotFoundException;
 import org.flowable.common.engine.impl.context.Context;
+import org.flowable.common.engine.impl.util.io.InputStreamSource;
 import org.flowable.engine.impl.cfg.ProcessEngineConfigurationImpl;
 import org.flowable.engine.impl.persistence.deploy.DeploymentManager;
 import org.flowable.engine.impl.persistence.deploy.ProcessDefinitionCacheEntry;
 import org.flowable.engine.impl.persistence.entity.ProcessDefinitionEntity;
 import org.flowable.engine.impl.persistence.entity.ProcessDefinitionEntityManager;
+import org.flowable.engine.impl.persistence.entity.ProcessEntity;
+import org.flowable.engine.impl.persistence.entity.ProcessEntityImpl;
+import org.flowable.engine.impl.persistence.entity.data.ProcessDataManager;
 import org.flowable.engine.repository.ProcessDefinition;
+
+import java.io.ByteArrayInputStream;
 
 /**
  * A utility class that hides the complexity of {@link ProcessDefinitionEntity} and {@link Process} lookup. Use this class rather than accessing the process definition cache or
@@ -31,6 +38,8 @@ import org.flowable.engine.repository.ProcessDefinition;
  * @author Joram Barrez
  */
 public class ProcessDefinitionUtil {
+
+     static  BpmnXMLConverter  bpmnXMLConverter = new BpmnXMLConverter();
 
     public static ProcessDefinition getProcessDefinition(String processDefinitionId) {
         return getProcessDefinition(processDefinitionId, false);
@@ -64,6 +73,55 @@ public class ProcessDefinitionUtil {
             // This will check the cache in the findDeployedProcessDefinitionById and resolveProcessDefinition method
             ProcessDefinition processDefinitionEntity = deploymentManager.findDeployedProcessDefinitionById(processDefinitionId);
             return deploymentManager.resolveProcessDefinition(processDefinitionEntity).getProcess();
+        }
+    }
+
+    public static Process getProcess(String processInstanceId,String processDefinitionId) {
+       if (Context.getCommandContext() == null) {
+           throw new FlowableException("Cannot get process model: no current command context is active");
+
+       } else if (CommandContextUtil.getProcessEngineConfiguration() == null) {
+           return Flowable5Util.getFlowable5CompatibilityHandler().getProcessDefinitionProcessObject(processDefinitionId);
+
+       } else if (processInstanceId ==null) {
+           DeploymentManager deploymentManager = CommandContextUtil.getProcessEngineConfiguration().getDeploymentManager();
+           // This will check the cache in the findDeployedProcessDefinitionById and resolveProcessDefinition method
+           ProcessDefinition processDefinitionEntity = deploymentManager.findDeployedProcessDefinitionById(processDefinitionId);
+           return deploymentManager.resolveProcessDefinition(processDefinitionEntity).getProcess();
+       }
+       // TODO 加锁
+       ProcessDataManager processDataManager = CommandContextUtil.getProcessEngineConfiguration().getProcessDataManager();
+       ProcessEntity processEntity = processDataManager.getProcessByInstanceId(processInstanceId);
+       if (processEntity!=null ) {
+           ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(processEntity.getBytes());
+           BpmnModel bpmnModel = bpmnXMLConverter.convertToBpmnModel(new InputStreamSource(byteArrayInputStream), true, false, "UTF-8");
+           return bpmnModel.getMainProcess();
+       } else {
+           DeploymentManager deploymentManager = CommandContextUtil.getProcessEngineConfiguration().getDeploymentManager();
+           // This will check the cache in the findDeployedProcessDefinitionById and resolveProcessDefinition method
+           ProcessDefinition processDefinitionEntity = deploymentManager.findDeployedProcessDefinitionById(processDefinitionId);
+           return deploymentManager.resolveProcessDefinition(processDefinitionEntity).getProcess();
+
+       }
+    }
+    public static void updateProcess(String processInstanceId,BpmnModel bpmnModel) {
+        if (Context.getCommandContext() == null) {
+            throw new FlowableException("Cannot get process model: no current command context is active");
+
+        }
+        ProcessDataManager processDataManager = CommandContextUtil.getProcessEngineConfiguration().getProcessDataManager();
+        ProcessEntity processEntity = processDataManager.getProcessByInstanceId(processInstanceId);
+        byte[] bytes = bpmnXMLConverter.convertToXML(bpmnModel);
+        if (processEntity == null) {
+            processEntity = new ProcessEntityImpl();
+            processEntity.setId(processInstanceId);
+            processEntity.setRevision(1);
+            processEntity.setBytes(bytes);
+            processDataManager.insert(processEntity);
+        } else {
+            processEntity.setBytes(bytes);
+            processEntity.setRevision(processEntity.getRevisionNext());
+            processDataManager.update(processEntity);
         }
     }
 

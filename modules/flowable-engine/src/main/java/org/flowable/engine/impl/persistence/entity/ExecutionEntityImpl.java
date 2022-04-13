@@ -274,9 +274,10 @@ public class ExecutionEntityImpl extends AbstractBpmnEngineVariableScopeEntity i
     @Override
     public FlowElement getCurrentFlowElement() {
         if (currentFlowElement == null) {
+            String processInstanceId = getProcessInstanceId();
             String processDefinitionId = getProcessDefinitionId();
             if (processDefinitionId != null) {
-                org.flowable.bpmn.model.Process process = ProcessDefinitionUtil.getProcess(processDefinitionId);
+                org.flowable.bpmn.model.Process process = ProcessDefinitionUtil.getProcess(processDefinitionId,processInstanceId);
                 currentFlowElement = process.getFlowElement(getCurrentActivityId(), true);
             }
         }

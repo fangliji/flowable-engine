@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?> 
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd"> 
+  
+<mapper namespace="org.flowable.engine.impl.persistence.entity.ProcessEntityImpl">
+
+  <!-- Process INSERT -->
+  
+  <insert id="insertProcess" parameterType="org.flowable.engine.impl.persistence.entity.ProcessEntityImpl">
+    insert into ACT_RE_PROCESS(ID_, PROC_INST_ID_,REV_, BYTES_)
+    values (
+      #{id, jdbcType=VARCHAR},
+      #{procInstId, jdbcType=VARCHAR},
+      1,
+      #{bytes, jdbcType=${blobType}}
+    )
+  </insert>
+
+  <update id="updateProcess" parameterType="org.flowable.engine.impl.persistence.entity.ProcessEntityImpl">
+    update ACT_RE_PROCESS
+    set
+      REV_ = #{revisionNext, jdbcType=INTEGER},
+      BYTES_ = #{bytes, jdbcType=${blobType}}
+    where ID_ = #{procInstId}
+      and REV_ = #{revision, jdbcType=INTEGER}
+  </update>
+
+
+    <!-- Process RESULTMAP -->
+
+    <resultMap id="processResultMap" type="org.flowable.engine.impl.persistence.entity.ProcessEntityImpl">
+        <id property="id" column="ID_" jdbcType="VARCHAR" />
+        <result property="revision" column="REV_" jdbcType="INTEGER"/>
+        <result property="procInstId" column="PROC_INST_ID_" jdbcType="VARCHAR"/>
+        <result property="bytes" column="BYTES_" jdbcType="${blobType}"/>
+    </resultMap>
+
+    <!-- Process RESULTMAP -->
+    <select id="selectProcessByInstanceId" parameterType="string" resultMap="processResultMap">
+    select * from ${prefix}ACT_RE_PROCESS where ID_ = #{id, jdbcType=VARCHAR}
+    </select>
+
+  
+  <!-- MODEL DELETE -->
+  
+
+
+
+</mapper>

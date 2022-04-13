@@ -98,6 +98,7 @@ public class TableDataManagerImpl extends AbstractManager implements TableDataMa
         entityToTableNameMap.put(ProcessDefinitionEntity.class, "ACT_RE_PROCDEF");
         entityToTableNameMap.put(ModelEntity.class, "ACT_RE_MODEL");
         entityToTableNameMap.put(ProcessDefinitionInfoEntity.class, "ACT_PROCDEF_INFO");
+        entityToTableNameMap.put(ProcessEntity.class,"ACT_RE_PROCESS");
 
         // history
         entityToTableNameMap.put(CommentEntity.class, "ACT_HI_COMMENT");

@@ -10,9 +10,9 @@
     insert into ${prefix}ACT_GE_BYTEARRAY(ID_, REV_, NAME_, BYTES_, DEPLOYMENT_ID_)
     values (
       #{id, jdbcType=VARCHAR},
-      1, 
-      #{name, jdbcType=VARCHAR}, 
-      #{bytes, jdbcType=${blobType}}, 
+      1,
+      #{name, jdbcType=VARCHAR},
+      #{bytes, jdbcType=${blobType}},
       #{deploymentId, jdbcType=VARCHAR}
     )  
   </insert>

@@ -291,38 +291,8 @@ import org.flowable.engine.impl.persistence.entity.ResourceEntityManager;
 import org.flowable.engine.impl.persistence.entity.ResourceEntityManagerImpl;
 import org.flowable.engine.impl.persistence.entity.TableDataManager;
 import org.flowable.engine.impl.persistence.entity.TableDataManagerImpl;
-import org.flowable.engine.impl.persistence.entity.data.ActivityInstanceDataManager;
-import org.flowable.engine.impl.persistence.entity.data.AttachmentDataManager;
-import org.flowable.engine.impl.persistence.entity.data.ByteArrayDataManager;
-import org.flowable.engine.impl.persistence.entity.data.CommentDataManager;
-import org.flowable.engine.impl.persistence.entity.data.DeploymentDataManager;
-import org.flowable.engine.impl.persistence.entity.data.EventLogEntryDataManager;
-import org.flowable.engine.impl.persistence.entity.data.EventSubscriptionDataManager;
-import org.flowable.engine.impl.persistence.entity.data.ExecutionDataManager;
-import org.flowable.engine.impl.persistence.entity.data.HistoricActivityInstanceDataManager;
-import org.flowable.engine.impl.persistence.entity.data.HistoricDetailDataManager;
-import org.flowable.engine.impl.persistence.entity.data.HistoricProcessInstanceDataManager;
-import org.flowable.engine.impl.persistence.entity.data.ModelDataManager;
-import org.flowable.engine.impl.persistence.entity.data.ProcessDefinitionDataManager;
-import org.flowable.engine.impl.persistence.entity.data.ProcessDefinitionInfoDataManager;
-import org.flowable.engine.impl.persistence.entity.data.PropertyDataManager;
-import org.flowable.engine.impl.persistence.entity.data.ResourceDataManager;
-import org.flowable.engine.impl.persistence.entity.data.impl.MybatisActivityInstanceDataManager;
-import org.flowable.engine.impl.persistence.entity.data.impl.MybatisAttachmentDataManager;
-import org.flowable.engine.impl.persistence.entity.data.impl.MybatisByteArrayDataManager;
-import org.flowable.engine.impl.persistence.entity.data.impl.MybatisCommentDataManager;
-import org.flowable.engine.impl.persistence.entity.data.impl.MybatisDeploymentDataManager;
-import org.flowable.engine.impl.persistence.entity.data.impl.MybatisEventLogEntryDataManager;
-import org.flowable.engine.impl.persistence.entity.data.impl.MybatisEventSubscriptionDataManager;
-import org.flowable.engine.impl.persistence.entity.data.impl.MybatisExecutionDataManager;
-import org.flowable.engine.impl.persistence.entity.data.impl.MybatisHistoricActivityInstanceDataManager;
-import org.flowable.engine.impl.persistence.entity.data.impl.MybatisHistoricDetailDataManager;
-import org.flowable.engine.impl.persistence.entity.data.impl.MybatisHistoricProcessInstanceDataManager;
-import org.flowable.engine.impl.persistence.entity.data.impl.MybatisModelDataManager;
-import org.flowable.engine.impl.persistence.entity.data.impl.MybatisProcessDefinitionDataManager;
-import org.flowable.engine.impl.persistence.entity.data.impl.MybatisProcessDefinitionInfoDataManager;
-import org.flowable.engine.impl.persistence.entity.data.impl.MybatisPropertyDataManager;
-import org.flowable.engine.impl.persistence.entity.data.impl.MybatisResourceDataManager;
+import org.flowable.engine.impl.persistence.entity.data.*;
+import org.flowable.engine.impl.persistence.entity.data.impl.*;
 import org.flowable.engine.impl.scripting.VariableScopeResolverFactory;
 import org.flowable.engine.impl.util.ProcessInstanceHelper;
 import org.flowable.engine.migration.ProcessInstanceMigrationManager;
@@ -446,6 +416,7 @@ public abstract class ProcessEngineConfigurationImpl extends ProcessEngineConfig
     protected ProcessDefinitionInfoDataManager processDefinitionInfoDataManager;
     protected PropertyDataManager propertyDataManager;
     protected ResourceDataManager resourceDataManager;
+    protected ProcessDataManager processDataManager;
 
     // ENTITY MANAGERS ///////////////////////////////////////////////////////////
 
@@ -514,6 +485,7 @@ public abstract class ProcessEngineConfigurationImpl extends ProcessEngineConfig
 
     protected int processDefinitionCacheLimit = -1; // By default, no limit
     protected DeploymentCache<ProcessDefinitionCacheEntry> processDefinitionCache;
+
 
     protected int processDefinitionInfoCacheLimit = -1; // By default, no limit
     protected ProcessDefinitionInfoCache processDefinitionInfoCache;
@@ -1194,6 +1166,9 @@ public abstract class ProcessEngineConfigurationImpl extends ProcessEngineConfig
         }
         if (resourceDataManager == null) {
             resourceDataManager = new MybatisResourceDataManager(this);
+        }
+        if (processDataManager == null) {
+            processDataManager = new MybatisProcessDataManager(this);
         }
     }
 
@@ -3820,6 +3795,10 @@ public abstract class ProcessEngineConfigurationImpl extends ProcessEngineConfig
     public ProcessEngineConfigurationImpl setProcessDefinitionInfoEntityManager(ProcessDefinitionInfoEntityManager processDefinitionInfoEntityManager) {
         this.processDefinitionInfoEntityManager = processDefinitionInfoEntityManager;
         return this;
+    }
+
+    public ProcessDataManager getProcessDataManager() {
+        return processDataManager;
     }
 
     public PropertyEntityManager getPropertyEntityManager() {
