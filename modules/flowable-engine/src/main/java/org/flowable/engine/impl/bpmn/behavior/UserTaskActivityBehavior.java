@@ -245,6 +245,19 @@ public class UserTaskActivityBehavior extends TaskActivityBehavior {
         }
     }
 
+    public void deleteFlowTask(DelegateExecution execution) {
+        String executionId = execution.getId();
+        CommandContext commandContext = CommandContextUtil.getCommandContext();
+        ProcessEngineConfigurationImpl processEngineConfiguration = CommandContextUtil.getProcessEngineConfiguration(commandContext);
+        TaskService taskService = CommandContextUtil.getTaskService(commandContext);
+        List<TaskEntity> tasks  = taskService.findTasksByExecutionId(executionId);
+        if (tasks!=null) {
+            tasks.stream().forEach(task->{
+                TaskHelper.deleteTask(task, null, false, false, false); // false: no events fired for skipped user task
+            });
+        }
+    }
+
     @Override
     public void trigger(DelegateExecution execution, String signalName, Object signalData) {
         List<TaskEntity> taskEntities = CommandContextUtil.getTaskService().findTasksByExecutionId(execution.getId()); // Should be only one

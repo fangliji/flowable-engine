@@ -87,6 +87,10 @@ public interface StencilConstants {
     final String PROPERTY_NAME = "name";
     final String PROPERTY_DOCUMENTATION = "documentation";
 
+    // 新增用于判断节点是否删除，编辑过特效，用于升级中，做流程属性判断
+    final String PROPERTY_DELETE_FLAG = "delete_flag";
+    final String PROPERTY_EDIT_FLAG = "edit_flag";
+
     final String PROPERTY_PROCESS_ID = "process_id";
     final String PROPERTY_PROCESS_VERSION = "process_version";
     final String PROPERTY_PROCESS_AUTHOR = "process_author";

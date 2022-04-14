@@ -101,10 +101,37 @@ public class ProcessDefinitionUtil {
            // This will check the cache in the findDeployedProcessDefinitionById and resolveProcessDefinition method
            ProcessDefinition processDefinitionEntity = deploymentManager.findDeployedProcessDefinitionById(processDefinitionId);
            return deploymentManager.resolveProcessDefinition(processDefinitionEntity).getProcess();
-
        }
     }
+
+    public static BpmnModel getBpmnModel(String processInstanceId,String processDefinitionId) {
+        if (Context.getCommandContext() == null) {
+            throw new FlowableException("Cannot get process model: no current command context is active");
+
+        }  else if (processInstanceId ==null) {
+            DeploymentManager deploymentManager = CommandContextUtil.getProcessEngineConfiguration().getDeploymentManager();
+            // This will check the cache in the findDeployedProcessDefinitionById and resolveProcessDefinition method
+            ProcessDefinition processDefinitionEntity = deploymentManager.findDeployedProcessDefinitionById(processDefinitionId);
+            return deploymentManager.resolveProcessDefinition(processDefinitionEntity).getBpmnModel();
+        }
+        // TODO 加锁
+        ProcessDataManager processDataManager = CommandContextUtil.getProcessEngineConfiguration().getProcessDataManager();
+        ProcessEntity processEntity = processDataManager.getProcessByInstanceId(processInstanceId);
+        if (processEntity!=null ) {
+            ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(processEntity.getBytes());
+            BpmnModel bpmnModel = bpmnXMLConverter.convertToBpmnModel(new InputStreamSource(byteArrayInputStream), true, false, "UTF-8");
+            return bpmnModel;
+        } else {
+            DeploymentManager deploymentManager = CommandContextUtil.getProcessEngineConfiguration().getDeploymentManager();
+            // This will check the cache in the findDeployedProcessDefinitionById and resolveProcessDefinition method
+            ProcessDefinition processDefinitionEntity = deploymentManager.findDeployedProcessDefinitionById(processDefinitionId);
+            return deploymentManager.resolveProcessDefinition(processDefinitionEntity).getBpmnModel();
+        }
+    }
+
+
     public static void updateProcess(String processInstanceId,BpmnModel bpmnModel) {
+        //TODO 加锁
         if (Context.getCommandContext() == null) {
             throw new FlowableException("Cannot get process model: no current command context is active");
 

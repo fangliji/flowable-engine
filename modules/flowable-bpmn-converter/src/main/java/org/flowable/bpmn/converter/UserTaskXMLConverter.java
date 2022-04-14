@@ -90,6 +90,10 @@ public class UserTaskXMLConverter extends BaseBpmnXMLConverter {
             userTask = new UserTask();
         }
         BpmnXMLUtil.addXMLLocation(userTask, xtr);
+        userTask.setEditFlag(BpmnXMLUtil.getAttributeValue(ATTRIBUTE_EDIT_FLAG,xtr));
+        userTask.setDeleteFlag(BpmnXMLUtil.getAttributeValue(ATTRIBUTE_DELETE_FLAG,xtr));
+        //public static final String ATTRIBUTE_DELETE_FLAG = "delete_flag";
+        //public static final String ATTRIBUTE_EDIT_FLAG = "edit_flag";
         userTask.setDueDate(BpmnXMLUtil.getAttributeValue(ATTRIBUTE_TASK_USER_DUEDATE, xtr));
         userTask.setBusinessCalendarName(BpmnXMLUtil.getAttributeValue(ATTRIBUTE_TASK_USER_BUSINESS_CALENDAR_NAME, xtr));
         userTask.setCategory(BpmnXMLUtil.getAttributeValue(ATTRIBUTE_TASK_USER_CATEGORY, xtr));
@@ -135,6 +139,8 @@ public class UserTaskXMLConverter extends BaseBpmnXMLConverter {
         writeQualifiedAttribute(ATTRIBUTE_TASK_USER_BUSINESS_CALENDAR_NAME, userTask.getBusinessCalendarName(), xtw);
         writeQualifiedAttribute(ATTRIBUTE_TASK_USER_CATEGORY, userTask.getCategory(), xtw);
         writeQualifiedAttribute(ATTRIBUTE_FORM_FORMKEY, userTask.getFormKey(), xtw);
+        writeQualifiedAttribute(ATTRIBUTE_EDIT_FLAG,userTask.getEditFlag(),xtw);
+        writeQualifiedAttribute(ATTRIBUTE_DELETE_FLAG,userTask.getDeleteFlag(),xtw);
         if (userTask.getPriority() != null) {
             writeQualifiedAttribute(ATTRIBUTE_TASK_USER_PRIORITY, userTask.getPriority(), xtw);
         }

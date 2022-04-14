@@ -41,6 +41,9 @@ public interface BpmnXMLConstants {
     public static final String ATTRIBUTE_ID = "id";
     public static final String ATTRIBUTE_NAME = "name";
     public static final String ATTRIBUTE_TYPE = "type";
+    public static final String ATTRIBUTE_DELETE_FLAG = "delete_flag";
+    public static final String ATTRIBUTE_EDIT_FLAG = "edit_flag";
+
     public static final String ATTRIBUTE_DEFAULT = "default";
     public static final String ATTRIBUTE_ITEM_REF = "itemRef";
     public static final String ELEMENT_DEFINITIONS = "definitions";

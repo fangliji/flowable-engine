@@ -62,4 +62,10 @@ public abstract class FlowNodeActivityBehavior implements TriggerableActivityBeh
         return elementType;
     }
 
+
+    public void deleteFlowTask(DelegateExecution execution) {
+        // concrete activity behaviours that do accept signals should override this method;
+        throw new FlowableException("this activity can't delete Task");
+    }
+
 }
