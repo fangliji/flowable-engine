@@ -14,4 +14,5 @@ public interface ProcessEntity extends  Entity,HasRevision {
     byte[] getBytes();
     void setBytes(byte[] bytes);
     String getProcInstId();
+    void setProcInstId(String procInstId);
 }

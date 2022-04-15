@@ -84,7 +84,7 @@ public class AddUserTaskCmd implements Command<Void> {
             if (excutionId!=null) {
                 ExecutionEntity executionEntity = CommandContextUtil.getExecutionEntityManager(commandContext).findById(excutionId);
                 if (flowElement instanceof FlowNode) {
-                    ActivityBehavior activityBehavior = (ActivityBehavior) (FlowNode) ((UserTask) flowElement).getBehavior();
+                    ActivityBehavior activityBehavior = (ActivityBehavior) ((UserTask) flowElement).getBehavior();
                     FlowNodeActivityBehavior flowNodeActivityBehavior = (FlowNodeActivityBehavior) activityBehavior;
                     flowNodeActivityBehavior.jumpToTargetFlowElement(executionEntity,userTask);
                 }
@@ -134,7 +134,7 @@ public class AddUserTaskCmd implements Command<Void> {
         return sequenceFlow;
     }
 
-    public static UserTask generateUserTask(String id, String name, List<String> candidates) {
+    public  UserTask generateUserTask(String id, String name, List<String> candidates) {
         UserTask userTask = new UserTask();
         userTask.setPriority(String.valueOf("6"));
         userTask.setId(id);
@@ -150,7 +150,7 @@ public class AddUserTaskCmd implements Command<Void> {
      * @param userTask
      * @return
      */
-    public static Object createUserTaskBehavior(UserTask userTask) {
+    public  Object createUserTaskBehavior(UserTask userTask) {
         UserTaskActivityBehavior userTaskActivityBehavior = new UserTaskActivityBehavior(userTask);
         return userTaskActivityBehavior;
     }

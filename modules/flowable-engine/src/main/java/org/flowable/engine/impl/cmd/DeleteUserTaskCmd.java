@@ -68,6 +68,7 @@ public class DeleteUserTaskCmd implements Command<Void>, Serializable {
             // 不能修改链接线，而是标记删除
             userTask.setEditFlag("1");
             userTask.setDeleteFlag("1");
+            userTask.setSkipExpression("${true}");
             ProcessDefinitionUtil.updateProcess(processInstanceId,bpmnModel);
             //如果是删除进行中的节点，则要处理excution ，删除进行中的任务需要删除掉
             //处理当前的excution.task

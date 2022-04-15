@@ -54,7 +54,8 @@ public abstract class AbstractOperation implements Runnable {
             return execution.getCurrentFlowElement();
         } else if (execution.getCurrentActivityId() != null) {
             String processDefinitionId = execution.getProcessDefinitionId();
-            org.flowable.bpmn.model.Process process = ProcessDefinitionUtil.getProcess(processDefinitionId);
+            String processInstanceId = execution.getProcessInstanceId();
+            org.flowable.bpmn.model.Process process = ProcessDefinitionUtil.getProcess(processInstanceId,processDefinitionId);
             String activityId = execution.getCurrentActivityId();
             FlowElement currentFlowElement = process.getFlowElement(activityId, true);
             return currentFlowElement;

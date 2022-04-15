@@ -3,7 +3,6 @@ package org.flowable.common.engine.impl.persistence.cache;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.data.redis.core.RedisTemplate;
 
 /**
  * 类名称：ProcessCacheImpl

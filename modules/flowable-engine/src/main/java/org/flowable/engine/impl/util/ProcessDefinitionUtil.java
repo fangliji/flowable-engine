@@ -17,8 +17,13 @@ import org.flowable.bpmn.model.BpmnModel;
 import org.flowable.bpmn.model.Process;
 import org.flowable.common.engine.api.FlowableException;
 import org.flowable.common.engine.api.FlowableObjectNotFoundException;
+import org.flowable.common.engine.api.repository.EngineDeployment;
+import org.flowable.common.engine.api.repository.EngineResource;
 import org.flowable.common.engine.impl.context.Context;
 import org.flowable.common.engine.impl.util.io.InputStreamSource;
+import org.flowable.engine.impl.bpmn.deployer.ParsedDeploymentBuilderFactory;
+import org.flowable.engine.impl.bpmn.parser.BpmnParse;
+import org.flowable.engine.impl.bpmn.parser.BpmnParser;
 import org.flowable.engine.impl.cfg.ProcessEngineConfigurationImpl;
 import org.flowable.engine.impl.persistence.deploy.DeploymentManager;
 import org.flowable.engine.impl.persistence.deploy.ProcessDefinitionCacheEntry;
@@ -30,6 +35,8 @@ import org.flowable.engine.impl.persistence.entity.data.ProcessDataManager;
 import org.flowable.engine.repository.ProcessDefinition;
 
 import java.io.ByteArrayInputStream;
+import java.util.Date;
+import java.util.Map;
 
 /**
  * A utility class that hides the complexity of {@link ProcessDefinitionEntity} and {@link Process} lookup. Use this class rather than accessing the process definition cache or
@@ -93,8 +100,77 @@ public class ProcessDefinitionUtil {
        ProcessDataManager processDataManager = CommandContextUtil.getProcessEngineConfiguration().getProcessDataManager();
        ProcessEntity processEntity = processDataManager.getProcessByInstanceId(processInstanceId);
        if (processEntity!=null ) {
+           ParsedDeploymentBuilderFactory  parsedDeploymentBuilderFactory = CommandContextUtil.getProcessEngineConfiguration().getParsedDeploymentBuilderFactory();
+           BpmnParser bpmnParser = parsedDeploymentBuilderFactory.getBpmnParser();
            ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(processEntity.getBytes());
-           BpmnModel bpmnModel = bpmnXMLConverter.convertToBpmnModel(new InputStreamSource(byteArrayInputStream), true, false, "UTF-8");
+           EngineDeployment deployment = new EngineDeployment() {
+               @Override
+               public String getId() {
+                   return processInstanceId;
+               }
+
+               @Override
+               public String getName() {
+                   return processInstanceId;
+               }
+
+               @Override
+               public Date getDeploymentTime() {
+                   return null;
+               }
+
+               @Override
+               public String getCategory() {
+                   return null;
+               }
+
+               @Override
+               public String getKey() {
+                   return null;
+               }
+
+               @Override
+               public String getDerivedFrom() {
+                   return null;
+               }
+
+               @Override
+               public String getDerivedFromRoot() {
+                   return null;
+               }
+
+               @Override
+               public String getTenantId() {
+                   return null;
+               }
+
+               @Override
+               public String getEngineVersion() {
+                   return null;
+               }
+
+               @Override
+               public boolean isNew() {
+                   return false;
+               }
+
+               @Override
+               public Map<String, EngineResource> getResources() {
+                   return null;
+               }
+           };
+           String resourceName = processInstanceId;
+           BpmnParse bpmnParse = bpmnParser.createParse()
+                   .sourceInputStream(byteArrayInputStream)
+                   .setSourceSystemId(resourceName)
+                   .deployment(deployment)
+                   .name(resourceName);
+           try {
+               bpmnParse.execute();
+           } catch (Exception e) {
+               throw e;
+           }
+           BpmnModel bpmnModel = bpmnParse.getBpmnModel();
            return bpmnModel.getMainProcess();
        } else {
            DeploymentManager deploymentManager = CommandContextUtil.getProcessEngineConfiguration().getDeploymentManager();
@@ -118,8 +194,77 @@ public class ProcessDefinitionUtil {
         ProcessDataManager processDataManager = CommandContextUtil.getProcessEngineConfiguration().getProcessDataManager();
         ProcessEntity processEntity = processDataManager.getProcessByInstanceId(processInstanceId);
         if (processEntity!=null ) {
+            ParsedDeploymentBuilderFactory  parsedDeploymentBuilderFactory = CommandContextUtil.getProcessEngineConfiguration().getParsedDeploymentBuilderFactory();
+            BpmnParser bpmnParser = parsedDeploymentBuilderFactory.getBpmnParser();
             ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(processEntity.getBytes());
-            BpmnModel bpmnModel = bpmnXMLConverter.convertToBpmnModel(new InputStreamSource(byteArrayInputStream), true, false, "UTF-8");
+            EngineDeployment deployment = new EngineDeployment() {
+                @Override
+                public String getId() {
+                    return processInstanceId;
+                }
+
+                @Override
+                public String getName() {
+                    return processInstanceId;
+                }
+
+                @Override
+                public Date getDeploymentTime() {
+                    return null;
+                }
+
+                @Override
+                public String getCategory() {
+                    return null;
+                }
+
+                @Override
+                public String getKey() {
+                    return null;
+                }
+
+                @Override
+                public String getDerivedFrom() {
+                    return null;
+                }
+
+                @Override
+                public String getDerivedFromRoot() {
+                    return null;
+                }
+
+                @Override
+                public String getTenantId() {
+                    return null;
+                }
+
+                @Override
+                public String getEngineVersion() {
+                    return null;
+                }
+
+                @Override
+                public boolean isNew() {
+                    return false;
+                }
+
+                @Override
+                public Map<String, EngineResource> getResources() {
+                    return null;
+                }
+            };
+            String resourceName = processInstanceId;
+            BpmnParse bpmnParse = bpmnParser.createParse()
+                    .sourceInputStream(byteArrayInputStream)
+                    .setSourceSystemId(resourceName)
+                    .deployment(deployment)
+                    .name(resourceName);
+            try {
+                bpmnParse.execute();
+            } catch (Exception e) {
+                throw e;
+            }
+            BpmnModel bpmnModel = bpmnParse.getBpmnModel();
             return bpmnModel;
         } else {
             DeploymentManager deploymentManager = CommandContextUtil.getProcessEngineConfiguration().getDeploymentManager();
@@ -142,12 +287,12 @@ public class ProcessDefinitionUtil {
         if (processEntity == null) {
             processEntity = new ProcessEntityImpl();
             processEntity.setId(processInstanceId);
+            processEntity.setProcInstId(processInstanceId);
             processEntity.setRevision(1);
             processEntity.setBytes(bytes);
             processDataManager.insert(processEntity);
         } else {
             processEntity.setBytes(bytes);
-            processEntity.setRevision(processEntity.getRevisionNext());
             processDataManager.update(processEntity);
         }
     }

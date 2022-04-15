@@ -25,6 +25,7 @@ public class ProcessEntityImpl extends AbstractBpmnEngineEntity implements Proce
         return procInstId;
     }
 
+
     public void setProcInstId(String procInstId) {
         this.procInstId = procInstId;
     }
