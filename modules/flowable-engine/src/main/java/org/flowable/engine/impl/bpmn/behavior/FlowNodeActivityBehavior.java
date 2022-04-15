@@ -12,6 +12,7 @@
  */
 package org.flowable.engine.impl.bpmn.behavior;
 
+import org.flowable.bpmn.model.FlowElement;
 import org.flowable.bpmn.model.FlowNode;
 import org.flowable.common.engine.api.FlowableException;
 import org.flowable.engine.delegate.DelegateExecution;
@@ -66,6 +67,11 @@ public abstract class FlowNodeActivityBehavior implements TriggerableActivityBeh
     public void deleteFlowTask(DelegateExecution execution) {
         // concrete activity behaviours that do accept signals should override this method;
         throw new FlowableException("this activity can't delete Task");
+    }
+
+    public void jumpToTargetFlowElement(DelegateExecution execution, FlowElement flowElement) {
+        // concrete activity behaviours that do accept signals should override this method;
+        throw new FlowableException("this activity can't jump Task");
     }
 
 }

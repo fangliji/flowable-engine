@@ -16,6 +16,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
+import org.flowable.bpmn.model.FlowElement;
 import org.flowable.bpmn.model.UserTask;
 import org.flowable.common.engine.api.FlowableException;
 import org.flowable.common.engine.api.FlowableIllegalArgumentException;
@@ -245,6 +246,7 @@ public class UserTaskActivityBehavior extends TaskActivityBehavior {
         }
     }
 
+    @Override
     public void deleteFlowTask(DelegateExecution execution) {
         String executionId = execution.getId();
         CommandContext commandContext = CommandContextUtil.getCommandContext();
@@ -256,6 +258,13 @@ public class UserTaskActivityBehavior extends TaskActivityBehavior {
                 TaskHelper.deleteTask(task, null, false, false, false); // false: no events fired for skipped user task
             });
         }
+    }
+
+    @Override
+    public void jumpToTargetFlowElement(DelegateExecution execution, FlowElement flowElement) {
+        deleteFlowTask(execution);
+        execution.setCurrentFlowElement(flowElement);
+        CommandContextUtil.getAgenda().planContinueProcessInCompensation((ExecutionEntity) execution);
     }
 
     @Override

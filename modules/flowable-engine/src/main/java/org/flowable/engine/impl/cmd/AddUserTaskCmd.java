@@ -4,8 +4,11 @@ import org.flowable.bpmn.model.*;
 import org.flowable.bpmn.model.Process;
 import org.flowable.common.engine.impl.interceptor.Command;
 import org.flowable.common.engine.impl.interceptor.CommandContext;
+import org.flowable.engine.impl.bpmn.behavior.FlowNodeActivityBehavior;
 import org.flowable.engine.impl.bpmn.behavior.UserTaskActivityBehavior;
+import org.flowable.engine.impl.delegate.ActivityBehavior;
 import org.flowable.engine.impl.dynamic.DynamicAddUserTaskBuilder;
+import org.flowable.engine.impl.persistence.entity.ExecutionEntity;
 import org.flowable.engine.impl.util.CommandContextUtil;
 import org.flowable.engine.impl.util.ProcessDefinitionUtil;
 import org.flowable.task.service.impl.persistence.entity.TaskEntity;
@@ -39,34 +42,56 @@ public class AddUserTaskCmd implements Command<Void> {
         UserTask userTask = generateUserTask(dynamicAddUserTaskBuilder.nextTaskId(process.getFlowElementMap()), dynamicAddUserTaskBuilder.getName(), dynamicAddUserTaskBuilder.getCandidateUsers());
         process.addFlowElement(userTask);
         FlowNode oldNode = (FlowNode)flowElement;
+        // 在节点之前加签，如果加签的节点是正进行中的节点，那么加签之后，就应该跳到加签的节点上处理
         if ("before".equals(dynamicAddUserTaskBuilder.getAddWay())) {
             List<SequenceFlow> incomingFlows = oldNode.getIncomingFlows();
-            incomingFlows.forEach(sequenceFlow -> {
-                sequenceFlow.setTargetFlowElement(userTask);
-                sequenceFlow.setTargetRef(userTask.getId());
-            });
-            joinFlowNode(process, userTask, Arrays.asList(oldNode));
+            addUserTask(process,oldNode,userTask,incomingFlows,oldNode);
         } else {
+            // 在节点之后加签
             List<SequenceFlow> outgoingFlows = oldNode.getOutgoingFlows();
             SequenceFlow sequenceFlow = outgoingFlows.get(0);
-            outgoingFlows.forEach(sequence -> {
-                sequence.setTargetFlowElement(userTask);
-                sequence.setTargetRef(userTask.getId());
-            });
-            joinFlowNode(process, userTask, Arrays.asList((FlowNode) sequenceFlow.getTargetFlowElement()));
+            addUserTask(process,oldNode,userTask,outgoingFlows,(FlowNode) sequenceFlow.getTargetFlowElement());
         }
-        List<TaskEntity> taskEntities = CommandContextUtil.getTaskService(commandContext).findTasksByProcessInstanceId(processInstanceId);
-        for (TaskEntity taskEntity:taskEntities) {
-            taskEntity.getTaskDefinitionKey();
-        }
-       /* taskEntities.forEach(taskEntity -> {
-           if
-        });*/
-        // 判断是否当前任务节点加签
-
-        // toDo会签，顺序签，暂时不支持，平行加签
-        // deal 动态加签
+        // 加签之后更新节点
+        ProcessDefinitionUtil.updateProcess(processInstanceId,bpmnModel);
+        // 更新完成之后，判断是否需要处理节点
+        dealJumpToTargetElement(commandContext, flowElement, userTask);
         return null;
+    }
+
+    private void addUserTask (Process process,FlowNode oldNode,UserTask addUserTask ,List<SequenceFlow> sequenceFlows ,FlowNode targetFlowNode) {
+        sequenceFlows.forEach(sequence -> {
+            sequence.setTargetFlowElement(addUserTask);
+            sequence.setTargetRef(addUserTask.getId());
+        });
+        joinFlowNode(process, addUserTask, Arrays.asList(targetFlowNode));
+
+    }
+
+    private void dealJumpToTargetElement(CommandContext commandContext, FlowElement flowElement, UserTask userTask) {
+        if ("before".equals(dynamicAddUserTaskBuilder.getAddWay())) {
+            List<TaskEntity> taskEntities = CommandContextUtil.getTaskService(commandContext).findTasksByProcessInstanceId(processInstanceId);
+            String excutionId = null;
+            String taskId = null;
+            TaskEntity currentTaskEntity = null;
+            for (TaskEntity taskEntity:taskEntities) {
+                if (dynamicAddUserTaskBuilder.getTaskKey().equals(taskEntity.getTaskDefinitionKey())) {
+                    taskId = taskEntity.getId();
+                    excutionId = taskEntity.getExecutionId();
+                    break;
+                }
+            }
+            if (excutionId!=null) {
+                ExecutionEntity executionEntity = CommandContextUtil.getExecutionEntityManager(commandContext).findById(excutionId);
+                if (flowElement instanceof FlowNode) {
+                    ActivityBehavior activityBehavior = (ActivityBehavior) (FlowNode) ((UserTask) flowElement).getBehavior();
+                    FlowNodeActivityBehavior flowNodeActivityBehavior = (FlowNodeActivityBehavior) activityBehavior;
+                    flowNodeActivityBehavior.jumpToTargetFlowElement(executionEntity,userTask);
+                }
+            }
+            // 调到对应节点的逻辑，是先应该执行leave里面处理excution的逻辑，如果没有，则把 excution 设置当前需要跳转的节点，然后执行流程继续
+            // 该类行为，应该封装在父类 flow里面
+        }
     }
 
     private void joinFlowNode(org.flowable.bpmn.model.Process process, FlowNode sourceNode, List<FlowNode> targetNodeList) {
