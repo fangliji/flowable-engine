@@ -2,6 +2,7 @@ package org.flowable.engine.impl.cmd;
 
 import org.flowable.bpmn.model.*;
 import org.flowable.bpmn.model.Process;
+import org.flowable.common.engine.api.FlowableIllegalArgumentException;
 import org.flowable.common.engine.impl.interceptor.Command;
 import org.flowable.common.engine.impl.interceptor.CommandContext;
 import org.flowable.engine.impl.bpmn.behavior.FlowNodeActivityBehavior;
@@ -36,7 +37,7 @@ public class AddUserTaskCmd implements Command<Void> {
 
     @Override
     public Void execute(CommandContext commandContext) {
-        BpmnModel bpmnModel = ProcessDefinitionUtil.getBpmnModel(processInstanceId,processDefinitionId);
+        BpmnModel bpmnModel = ProcessDefinitionUtil.getBpmnModel(processInstanceId,processDefinitionId,true);
         Process process = bpmnModel.getMainProcess();
         FlowElement flowElement = process.getFlowElement(dynamicAddUserTaskBuilder.getTaskKey());
         UserTask userTask = generateUserTask(dynamicAddUserTaskBuilder.nextTaskId(process.getFlowElementMap()), dynamicAddUserTaskBuilder.getName(), dynamicAddUserTaskBuilder.getCandidateUsers());
@@ -52,8 +53,11 @@ public class AddUserTaskCmd implements Command<Void> {
             SequenceFlow sequenceFlow = outgoingFlows.get(0);
             addUserTask(process,oldNode,userTask,outgoingFlows,(FlowNode) sequenceFlow.getTargetFlowElement());
         }
-        // 加签之后更新节点
-        ProcessDefinitionUtil.updateProcess(processInstanceId,bpmnModel);
+        try {
+            ProcessDefinitionUtil.updateProcess(processInstanceId, bpmnModel);
+        } catch (Exception e) {
+            throw new FlowableIllegalArgumentException("AddUserTaskCmd"+e.getMessage());
+        }
         // 更新完成之后，判断是否需要处理节点
         dealJumpToTargetElement(commandContext, flowElement, userTask);
         return null;

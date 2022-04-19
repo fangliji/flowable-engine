@@ -23,9 +23,27 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 public abstract class FlowElement extends BaseElement implements HasExecutionListeners {
 
     protected String name;
+    protected String deleteFlag; //只有 1 是代表已经删除了，editFlag 编辑过
+    protected String editFlag; // 只有1 是代表编辑过了
     protected String documentation;
     protected List<FlowableListener> executionListeners = new ArrayList<>();
     protected FlowElementsContainer parentContainer;
+
+    public String getDeleteFlag() {
+        return deleteFlag;
+    }
+
+    public void setDeleteFlag(String deleteFlag) {
+        this.deleteFlag = deleteFlag;
+    }
+
+    public String getEditFlag() {
+        return editFlag;
+    }
+
+    public void setEditFlag(String editFlag) {
+        this.editFlag = editFlag;
+    }
 
     public String getName() {
         return name;

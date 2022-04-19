@@ -292,6 +292,11 @@ public class IdentityLinkEntityManagerImpl extends AbstractEntityManager<Identit
     }
 
     @Override
+    public void deleteIdentityLinksByTaskIdImmediately(String taskId) {
+        identityLinkDataManager.deleteIdentityLinksByTaskIdImmediately(taskId);
+    }
+
+    @Override
     public void deleteIdentityLinksByProcDef(String processDefId) {
         identityLinkDataManager.deleteIdentityLinksByProcDef(processDefId);
     }

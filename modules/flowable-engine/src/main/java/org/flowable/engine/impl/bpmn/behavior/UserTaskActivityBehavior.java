@@ -28,6 +28,7 @@ import org.flowable.common.engine.impl.calendar.DueDateBusinessCalendar;
 import org.flowable.common.engine.impl.el.ExpressionManager;
 import org.flowable.common.engine.impl.interceptor.CommandContext;
 import org.flowable.engine.DynamicBpmnConstants;
+import org.flowable.engine.IdentityService;
 import org.flowable.engine.ManagementService;
 import org.flowable.engine.delegate.DelegateExecution;
 import org.flowable.engine.delegate.TaskListener;
@@ -40,6 +41,8 @@ import org.flowable.engine.impl.util.CommandContextUtil;
 import org.flowable.engine.impl.util.EntityLinkUtil;
 import org.flowable.engine.impl.util.IdentityLinkUtil;
 import org.flowable.engine.impl.util.TaskHelper;
+import org.flowable.identitylink.api.IdentityLink;
+import org.flowable.identitylink.api.IdentityLinkInfo;
 import org.flowable.identitylink.service.impl.persistence.entity.IdentityLinkEntity;
 import org.flowable.task.service.TaskService;
 import org.flowable.task.service.event.impl.FlowableTaskEventBuilder;
@@ -255,7 +258,7 @@ public class UserTaskActivityBehavior extends TaskActivityBehavior {
         List<TaskEntity> tasks  = taskService.findTasksByExecutionId(executionId);
         if (tasks!=null) {
             tasks.stream().forEach(task->{
-                TaskHelper.deleteTask(task, null, false, false, false); // false: no events fired for skipped user task
+                TaskHelper.deleteTask(task, "delete", true, false, false); // false: no events fired for skipped user task
             });
         }
     }
@@ -265,6 +268,43 @@ public class UserTaskActivityBehavior extends TaskActivityBehavior {
         deleteFlowTask(execution);
         execution.setCurrentFlowElement(flowElement);
         CommandContextUtil.getAgenda().planContinueProcessInCompensation((ExecutionEntity) execution);
+    }
+
+    @Override
+    public void updateFlowTask(DelegateExecution execution,FlowElement flowElement) {
+        List<TaskEntity> taskEntities = CommandContextUtil.getTaskService().findTasksByExecutionId(execution.getId()); // Should be only one
+        TaskEntity currentTask = null;
+        for (TaskEntity taskEntity : taskEntities) {
+            if (!taskEntity.isDeleted()) {
+                throw new FlowableException("UserTask should not be signalled before complete");
+            }
+            currentTask = taskEntity;
+        }
+        ProcessEngineConfigurationImpl processEngineConfiguration = CommandContextUtil.getProcessEngineConfiguration();
+        ExpressionManager expressionManager = processEngineConfiguration.getExpressionManager();
+        UserTask userTask = (UserTask) flowElement;
+        List<String> candidateUsers = userTask.getCandidateUsers();
+        CommandContextUtil.getIdentityLinkService().deleteIdentityLinksByTaskIdImmediately(currentTask.getId());
+        if (candidateUsers != null && !candidateUsers.isEmpty()) {
+            for (String candidateUser : candidateUsers) {
+                Expression userIdExpr = expressionManager.createExpression(candidateUser);
+                Object value = userIdExpr.getValue(execution);
+                if (value != null) {
+                    if (value instanceof Collection) {
+                        List<IdentityLinkEntity> identityLinkEntities = CommandContextUtil.getIdentityLinkService().addCandidateUsers(currentTask.getId(), (Collection) value);
+                        IdentityLinkUtil.handleTaskIdentityLinkAdditions(currentTask, identityLinkEntities);
+
+                    } else {
+                        String strValue = value.toString();
+                        if (StringUtils.isNotEmpty(strValue)) {
+                            List<String> candidates = extractCandidates(strValue);
+                            List<IdentityLinkEntity> identityLinkEntities = CommandContextUtil.getIdentityLinkService().addCandidateUsers(currentTask.getId(), candidates);
+                            IdentityLinkUtil.handleTaskIdentityLinkAdditions(currentTask, identityLinkEntities);
+                        }
+                    }
+                }
+            }
+        }
     }
 
     @Override

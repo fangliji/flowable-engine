@@ -13,6 +13,8 @@
 
 package org.flowable.engine.impl.persistence.deploy;
 
+import java.io.ByteArrayInputStream;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -22,12 +24,20 @@ import org.flowable.common.engine.api.FlowableIllegalArgumentException;
 import org.flowable.common.engine.api.FlowableObjectNotFoundException;
 import org.flowable.common.engine.api.delegate.event.FlowableEngineEventType;
 import org.flowable.common.engine.api.delegate.event.FlowableEventDispatcher;
+import org.flowable.common.engine.api.repository.EngineDeployment;
+import org.flowable.common.engine.api.repository.EngineResource;
 import org.flowable.common.engine.impl.EngineDeployer;
 import org.flowable.common.engine.impl.persistence.deploy.DeploymentCache;
 import org.flowable.engine.app.AppModel;
 import org.flowable.engine.delegate.event.impl.FlowableEventBuilder;
 import org.flowable.engine.impl.ProcessDefinitionQueryImpl;
+import org.flowable.engine.impl.bpmn.deployer.ParsedDeploymentBuilder;
+import org.flowable.engine.impl.bpmn.deployer.ParsedDeploymentBuilderFactory;
+import org.flowable.engine.impl.bpmn.deployer.ResourceNameUtil;
+import org.flowable.engine.impl.bpmn.parser.BpmnParse;
+import org.flowable.engine.impl.bpmn.parser.BpmnParser;
 import org.flowable.engine.impl.cfg.ProcessEngineConfigurationImpl;
+import org.flowable.engine.impl.cmd.DeploymentSettings;
 import org.flowable.engine.impl.persistence.entity.DeploymentEntity;
 import org.flowable.engine.impl.persistence.entity.DeploymentEntityManager;
 import org.flowable.engine.impl.persistence.entity.ProcessDefinitionEntity;
@@ -63,6 +73,8 @@ public class DeploymentManager {
         }
     }
 
+
+
     public ProcessDefinition findDeployedProcessDefinitionById(String processDefinitionId) {
         if (processDefinitionId == null) {
             throw new FlowableIllegalArgumentException("Invalid process definition id : null");
@@ -80,6 +92,44 @@ public class DeploymentManager {
             processDefinition = resolveProcessDefinition(processDefinition).getProcessDefinition();
         }
         return processDefinition;
+    }
+
+    public BpmnModel getBpmnModelByIdFromDb(String processDefinitionId) {
+        ProcessDefinition processDefinition = processDefinitionEntityManager.findById(processDefinitionId);
+        if (processDefinition == null) {
+            throw new FlowableObjectNotFoundException("no deployed process definition found with id '" + processDefinitionId + "'", ProcessDefinition.class);
+        }
+        String deploymentId = processDefinition.getDeploymentId();
+        DeploymentEntity deployment = deploymentEntityManager.findById(deploymentId);
+        deployment.setNew(false);
+        for (EngineResource resource : deployment.getResources().values()) {
+
+            ParsedDeploymentBuilderFactory parsedDeploymentBuilderFactory = CommandContextUtil.getProcessEngineConfiguration().getParsedDeploymentBuilderFactory();
+            ParsedDeploymentBuilder parsedDeploymentBuilder = parsedDeploymentBuilderFactory.getBuilderForDeployment(deployment);
+            if (isBpmnResource(resource.getName())) {
+                BpmnParser bpmnParser = parsedDeploymentBuilderFactory.getBpmnParser();
+                ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(resource.getBytes());
+                BpmnParse bpmnParse = bpmnParser.createParse()
+                        .sourceInputStream(byteArrayInputStream)
+                        .setSourceSystemId(resource.getName())
+                        .deployment(deployment)
+                        .name(resource.getName());
+                bpmnParse.execute();
+                BpmnModel bpmnModel = bpmnParse.getBpmnModel();
+                return bpmnModel;
+            }
+        }
+        return null;
+    }
+
+    protected boolean isBpmnResource(String resourceName) {
+        for (String suffix : ResourceNameUtil.BPMN_RESOURCE_SUFFIXES) {
+            if (resourceName.endsWith(suffix)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public ProcessDefinition findDeployedLatestProcessDefinitionByKey(String processDefinitionKey) {

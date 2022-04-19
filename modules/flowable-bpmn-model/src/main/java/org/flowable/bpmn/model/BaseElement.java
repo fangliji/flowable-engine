@@ -27,8 +27,6 @@ public abstract class BaseElement implements HasExtensionAttributes {
     protected String id;
     protected int xmlRowNumber;
     protected int xmlColumnNumber;
-    protected String deleteFlag; //只有 1 是代表已经删除了，editFlag 编辑过
-    protected String editFlag; // 只有1 是代表编辑过了
 
     protected Map<String, List<ExtensionElement>> extensionElements = new LinkedHashMap<>();
     /** extension attributes could be part of each element */
@@ -40,22 +38,6 @@ public abstract class BaseElement implements HasExtensionAttributes {
 
     public void setId(String id) {
         this.id = id;
-    }
-
-    public String getDeleteFlag() {
-        return deleteFlag;
-    }
-
-    public void setDeleteFlag(String deleteFlag) {
-        this.deleteFlag = deleteFlag;
-    }
-
-    public String getEditFlag() {
-        return editFlag;
-    }
-
-    public void setEditFlag(String editFlag) {
-        this.editFlag = editFlag;
     }
 
     public int getXmlRowNumber() {

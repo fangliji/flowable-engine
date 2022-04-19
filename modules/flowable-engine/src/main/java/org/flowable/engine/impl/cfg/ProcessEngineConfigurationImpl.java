@@ -293,6 +293,7 @@ import org.flowable.engine.impl.persistence.entity.TableDataManager;
 import org.flowable.engine.impl.persistence.entity.TableDataManagerImpl;
 import org.flowable.engine.impl.persistence.entity.data.*;
 import org.flowable.engine.impl.persistence.entity.data.impl.*;
+import org.flowable.engine.impl.redis.RedisWorker;
 import org.flowable.engine.impl.scripting.VariableScopeResolverFactory;
 import org.flowable.engine.impl.util.ProcessInstanceHelper;
 import org.flowable.engine.migration.ProcessInstanceMigrationManager;
@@ -866,9 +867,20 @@ public abstract class ProcessEngineConfigurationImpl extends ProcessEngineConfig
     protected Set<Class<?>> flowable5CustomMybatisMappers;
     protected Set<String> flowable5CustomMybatisXMLMappers;
     protected Object flowable5ExpressionManager;
+    protected RedisWorker redisWorker;
 
     // buildProcessEngine
     // ///////////////////////////////////////////////////////
+    // 构造configuration的传进来
+
+
+    public RedisWorker getRedisWorker() {
+        return redisWorker;
+    }
+
+    public void setRedisWorker(RedisWorker redisWorker) {
+        this.redisWorker = redisWorker;
+    }
 
     @Override
     public ProcessEngine buildProcessEngine() {

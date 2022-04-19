@@ -157,6 +157,12 @@ public class MybatisIdentityLinkDataManager extends AbstractDataManager<Identity
             bulkDelete("deleteIdentityLinksByTaskId", identityLinksByTaskIdMatcher, taskId);
         }
     }
+    @Override
+    public void deleteIdentityLinksByTaskIdImmediately(String taskId) {
+        getDbSqlSession().getSqlSession().delete("deleteIdentityLinksByTaskId",taskId);
+    }
+
+
 
     @Override
     public void deleteIdentityLinksByProcDef(String processDefId) {

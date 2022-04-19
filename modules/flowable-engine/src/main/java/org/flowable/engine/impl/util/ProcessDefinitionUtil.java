@@ -20,6 +20,7 @@ import org.flowable.common.engine.api.FlowableObjectNotFoundException;
 import org.flowable.common.engine.api.repository.EngineDeployment;
 import org.flowable.common.engine.api.repository.EngineResource;
 import org.flowable.common.engine.impl.context.Context;
+import org.flowable.common.engine.impl.persistence.deploy.DeploymentCache;
 import org.flowable.common.engine.impl.util.io.InputStreamSource;
 import org.flowable.engine.impl.bpmn.deployer.ParsedDeploymentBuilderFactory;
 import org.flowable.engine.impl.bpmn.parser.BpmnParse;
@@ -32,6 +33,7 @@ import org.flowable.engine.impl.persistence.entity.ProcessDefinitionEntityManage
 import org.flowable.engine.impl.persistence.entity.ProcessEntity;
 import org.flowable.engine.impl.persistence.entity.ProcessEntityImpl;
 import org.flowable.engine.impl.persistence.entity.data.ProcessDataManager;
+import org.flowable.engine.impl.redis.RedisWorker;
 import org.flowable.engine.repository.ProcessDefinition;
 
 import java.io.ByteArrayInputStream;
@@ -96,204 +98,185 @@ public class ProcessDefinitionUtil {
            ProcessDefinition processDefinitionEntity = deploymentManager.findDeployedProcessDefinitionById(processDefinitionId);
            return deploymentManager.resolveProcessDefinition(processDefinitionEntity).getProcess();
        }
-       // TODO 加锁
-       ProcessDataManager processDataManager = CommandContextUtil.getProcessEngineConfiguration().getProcessDataManager();
-       ProcessEntity processEntity = processDataManager.getProcessByInstanceId(processInstanceId);
-       if (processEntity!=null ) {
-           ParsedDeploymentBuilderFactory  parsedDeploymentBuilderFactory = CommandContextUtil.getProcessEngineConfiguration().getParsedDeploymentBuilderFactory();
-           BpmnParser bpmnParser = parsedDeploymentBuilderFactory.getBpmnParser();
-           ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(processEntity.getBytes());
-           EngineDeployment deployment = new EngineDeployment() {
-               @Override
-               public String getId() {
-                   return processInstanceId;
-               }
-
-               @Override
-               public String getName() {
-                   return processInstanceId;
-               }
-
-               @Override
-               public Date getDeploymentTime() {
-                   return null;
-               }
-
-               @Override
-               public String getCategory() {
-                   return null;
-               }
-
-               @Override
-               public String getKey() {
-                   return null;
-               }
-
-               @Override
-               public String getDerivedFrom() {
-                   return null;
-               }
-
-               @Override
-               public String getDerivedFromRoot() {
-                   return null;
-               }
-
-               @Override
-               public String getTenantId() {
-                   return null;
-               }
-
-               @Override
-               public String getEngineVersion() {
-                   return null;
-               }
-
-               @Override
-               public boolean isNew() {
-                   return false;
-               }
-
-               @Override
-               public Map<String, EngineResource> getResources() {
-                   return null;
-               }
-           };
-           String resourceName = processInstanceId;
-           BpmnParse bpmnParse = bpmnParser.createParse()
-                   .sourceInputStream(byteArrayInputStream)
-                   .setSourceSystemId(resourceName)
-                   .deployment(deployment)
-                   .name(resourceName);
-           try {
-               bpmnParse.execute();
-           } catch (Exception e) {
-               throw e;
+       try {
+            BpmnModel bpmnModel = getBpmnModelFromProcessEntity(processInstanceId);
+            if (bpmnModel!=null) {
+                return bpmnModel.getMainProcess();
            }
-           BpmnModel bpmnModel = bpmnParse.getBpmnModel();
-           return bpmnModel.getMainProcess();
-       } else {
-           DeploymentManager deploymentManager = CommandContextUtil.getProcessEngineConfiguration().getDeploymentManager();
-           // This will check the cache in the findDeployedProcessDefinitionById and resolveProcessDefinition method
-           ProcessDefinition processDefinitionEntity = deploymentManager.findDeployedProcessDefinitionById(processDefinitionId);
-           return deploymentManager.resolveProcessDefinition(processDefinitionEntity).getProcess();
+       } catch (Exception e) {
+            throw new FlowableException(e.getMessage());
        }
+       DeploymentManager deploymentManager = CommandContextUtil.getProcessEngineConfiguration().getDeploymentManager();
+        // This will check the cache in the findDeployedProcessDefinitionById and resolveProcessDefinition method
+       ProcessDefinition processDefinitionEntity = deploymentManager.findDeployedProcessDefinitionById(processDefinitionId);
+       return deploymentManager.resolveProcessDefinition(processDefinitionEntity).getProcess();
+
     }
 
-    public static BpmnModel getBpmnModel(String processInstanceId,String processDefinitionId) {
+
+
+    private static EngineDeployment createEngineDeployment(String processInstanceId) {
+        return new EngineDeployment() {
+            @Override
+            public String getId() {
+                return processInstanceId;
+            }
+
+            @Override
+            public String getName() {
+                return processInstanceId;
+            }
+
+            @Override
+            public Date getDeploymentTime() {
+                return null;
+            }
+
+            @Override
+            public String getCategory() {
+                return null;
+            }
+
+            @Override
+            public String getKey() {
+                return null;
+            }
+
+            @Override
+            public String getDerivedFrom() {
+                return null;
+            }
+
+            @Override
+            public String getDerivedFromRoot() {
+                return null;
+            }
+
+            @Override
+            public String getTenantId() {
+                return null;
+            }
+
+            @Override
+            public String getEngineVersion() {
+                return null;
+            }
+
+            @Override
+            public boolean isNew() {
+                return false;
+            }
+
+            @Override
+            public Map<String, EngineResource> getResources() {
+                return null;
+            }
+        };
+    }
+
+    public static BpmnModel getBpmnModel(String processInstanceId,String processDefinitionId,boolean isFromDb) {
+
         if (Context.getCommandContext() == null) {
             throw new FlowableException("Cannot get process model: no current command context is active");
 
         }  else if (processInstanceId ==null) {
             DeploymentManager deploymentManager = CommandContextUtil.getProcessEngineConfiguration().getDeploymentManager();
-            // This will check the cache in the findDeployedProcessDefinitionById and resolveProcessDefinition method
-            ProcessDefinition processDefinitionEntity = deploymentManager.findDeployedProcessDefinitionById(processDefinitionId);
-            return deploymentManager.resolveProcessDefinition(processDefinitionEntity).getBpmnModel();
-        }
-        // TODO 加锁
-        ProcessDataManager processDataManager = CommandContextUtil.getProcessEngineConfiguration().getProcessDataManager();
-        ProcessEntity processEntity = processDataManager.getProcessByInstanceId(processInstanceId);
-        if (processEntity!=null ) {
-            ParsedDeploymentBuilderFactory  parsedDeploymentBuilderFactory = CommandContextUtil.getProcessEngineConfiguration().getParsedDeploymentBuilderFactory();
-            BpmnParser bpmnParser = parsedDeploymentBuilderFactory.getBpmnParser();
-            ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(processEntity.getBytes());
-            EngineDeployment deployment = new EngineDeployment() {
-                @Override
-                public String getId() {
-                    return processInstanceId;
-                }
-
-                @Override
-                public String getName() {
-                    return processInstanceId;
-                }
-
-                @Override
-                public Date getDeploymentTime() {
-                    return null;
-                }
-
-                @Override
-                public String getCategory() {
-                    return null;
-                }
-
-                @Override
-                public String getKey() {
-                    return null;
-                }
-
-                @Override
-                public String getDerivedFrom() {
-                    return null;
-                }
-
-                @Override
-                public String getDerivedFromRoot() {
-                    return null;
-                }
-
-                @Override
-                public String getTenantId() {
-                    return null;
-                }
-
-                @Override
-                public String getEngineVersion() {
-                    return null;
-                }
-
-                @Override
-                public boolean isNew() {
-                    return false;
-                }
-
-                @Override
-                public Map<String, EngineResource> getResources() {
-                    return null;
-                }
-            };
-            String resourceName = processInstanceId;
-            BpmnParse bpmnParse = bpmnParser.createParse()
-                    .sourceInputStream(byteArrayInputStream)
-                    .setSourceSystemId(resourceName)
-                    .deployment(deployment)
-                    .name(resourceName);
-            try {
-                bpmnParse.execute();
-            } catch (Exception e) {
-                throw e;
+            if (isFromDb) {
+                return deploymentManager.getBpmnModelByIdFromDb(processDefinitionId);
             }
-            BpmnModel bpmnModel = bpmnParse.getBpmnModel();
-            return bpmnModel;
-        } else {
-            DeploymentManager deploymentManager = CommandContextUtil.getProcessEngineConfiguration().getDeploymentManager();
             // This will check the cache in the findDeployedProcessDefinitionById and resolveProcessDefinition method
             ProcessDefinition processDefinitionEntity = deploymentManager.findDeployedProcessDefinitionById(processDefinitionId);
             return deploymentManager.resolveProcessDefinition(processDefinitionEntity).getBpmnModel();
         }
+        try {
+            BpmnModel bpmnModel = getBpmnModelFromProcessEntity(processInstanceId);
+            if (bpmnModel!=null) {
+                return bpmnModel;
+            }
+        } catch (Exception e) {
+            throw new FlowableException(e.getMessage());
+        }
+        DeploymentManager deploymentManager = CommandContextUtil.getProcessEngineConfiguration().getDeploymentManager();
+        if (isFromDb) {
+            return deploymentManager.getBpmnModelByIdFromDb(processDefinitionId);
+        }
+        // This will check the cache in the findDeployedProcessDefinitionById and resolveProcessDefinition method
+        ProcessDefinition processDefinitionEntity = deploymentManager.findDeployedProcessDefinitionById(processDefinitionId);
+        return deploymentManager.resolveProcessDefinition(processDefinitionEntity).getBpmnModel();
+
+    }
+
+    public static BpmnModel getBpmnModelFromProcessEntity(String processInstanceId) throws Exception{
+        // 加锁
+        RedisWorker redisWorker = CommandContextUtil.getProcessEngineConfiguration().getRedisWorker();
+
+        boolean lock = false;
+        lock = redisWorker.setIfAbsent(String.join("PROCESS#",processInstanceId), 15,String.join(processInstanceId,String.valueOf(System.currentTimeMillis())));
+        if (!lock) {
+            throw new FlowableException("Cannot Get PROCESS "+processInstanceId+" lock");
+        }
+        try {
+            ProcessDataManager processDataManager = CommandContextUtil.getProcessEngineConfiguration().getProcessDataManager();
+            ProcessEntity processEntity = processDataManager.getProcessByInstanceId(processInstanceId);
+            if (processEntity!=null ) {
+                ParsedDeploymentBuilderFactory  parsedDeploymentBuilderFactory = CommandContextUtil.getProcessEngineConfiguration().getParsedDeploymentBuilderFactory();
+                BpmnParser bpmnParser = parsedDeploymentBuilderFactory.getBpmnParser();
+                ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(processEntity.getBytes());
+                EngineDeployment deployment = createEngineDeployment(processInstanceId);
+                String resourceName = processInstanceId;
+                BpmnParse bpmnParse = bpmnParser.createParse()
+                        .sourceInputStream(byteArrayInputStream)
+                        .setSourceSystemId(resourceName)
+                        .deployment(deployment)
+                        .name(resourceName);
+                    bpmnParse.execute();
+                BpmnModel bpmnModel = bpmnParse.getBpmnModel();
+                return bpmnModel;
+            }
+        } catch (Exception e) {
+            throw new FlowableException(e.getMessage());
+        } finally {
+            if (lock) {
+                redisWorker.delete(String.join("PROCESS#",processInstanceId));
+            }
+        }
+        return null;
     }
 
 
-    public static void updateProcess(String processInstanceId,BpmnModel bpmnModel) {
+    public static void updateProcess(String processInstanceId,BpmnModel bpmnModel) throws Exception{
         //TODO 加锁
         if (Context.getCommandContext() == null) {
             throw new FlowableException("Cannot get process model: no current command context is active");
 
         }
-        ProcessDataManager processDataManager = CommandContextUtil.getProcessEngineConfiguration().getProcessDataManager();
-        ProcessEntity processEntity = processDataManager.getProcessByInstanceId(processInstanceId);
-        byte[] bytes = bpmnXMLConverter.convertToXML(bpmnModel);
-        if (processEntity == null) {
-            processEntity = new ProcessEntityImpl();
-            processEntity.setId(processInstanceId);
-            processEntity.setProcInstId(processInstanceId);
-            processEntity.setRevision(1);
-            processEntity.setBytes(bytes);
-            processDataManager.insert(processEntity);
-        } else {
-            processEntity.setBytes(bytes);
-            processDataManager.update(processEntity);
+        RedisWorker redisWorker = CommandContextUtil.getProcessEngineConfiguration().getRedisWorker();
+        // 加锁
+        // 最高发leader到5级
+        boolean lock = false;
+        lock = redisWorker.setIfAbsent(String.join("PROCESS#",processInstanceId), 15,String.join(processInstanceId,String.valueOf(System.currentTimeMillis())));
+        if (!lock) {
+            throw new FlowableException("Cannot Get PROCESS "+processInstanceId+" lock");
+        }
+        try {
+            ProcessDataManager processDataManager = CommandContextUtil.getProcessEngineConfiguration().getProcessDataManager();
+            ProcessEntity processEntity = processDataManager.getProcessByInstanceId(processInstanceId);
+            byte[] bytes = bpmnXMLConverter.convertToXML(bpmnModel);
+            if (processEntity == null) {
+                processEntity = new ProcessEntityImpl();
+                processEntity.setId(processInstanceId);
+                processEntity.setProcInstId(processInstanceId);
+                processEntity.setRevision(1);
+                processEntity.setBytes(bytes);
+                processDataManager.insert(processEntity);
+            } else {
+                processEntity.setBytes(bytes);
+                processDataManager.update(processEntity);
+            }
+        } finally {
+          if (lock) {
+              redisWorker.delete(String.join("PROCESS#",processInstanceId));
+          }
         }
     }
 
@@ -309,6 +292,7 @@ public class ProcessDefinitionUtil {
             return deploymentManager.resolveProcessDefinition(processDefinitionEntity).getBpmnModel();
         }
     }
+
 
     public static BpmnModel getBpmnModelFromCache(String processDefinitionId) {
         ProcessDefinitionCacheEntry cacheEntry = CommandContextUtil.getProcessEngineConfiguration().getProcessDefinitionCache().get(processDefinitionId);

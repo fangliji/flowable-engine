@@ -44,6 +44,8 @@ public interface IdentityLinkDataManager extends DataManager<IdentityLinkEntity>
 
     void deleteIdentityLinksByTaskId(String taskId);
 
+    void deleteIdentityLinksByTaskIdImmediately(String taskId);
+
     void deleteIdentityLinksByProcDef(String processDefId);
     
     void deleteIdentityLinksByProcessInstanceId(String processInstanceId);

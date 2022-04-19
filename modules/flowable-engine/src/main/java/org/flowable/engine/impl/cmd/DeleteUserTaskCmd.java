@@ -1,5 +1,6 @@
 package org.flowable.engine.impl.cmd;
 
+import org.apache.commons.lang3.StringUtils;
 import org.flowable.bpmn.model.*;
 import org.flowable.bpmn.model.Process;
 import org.flowable.common.engine.api.FlowableIllegalArgumentException;
@@ -60,7 +61,7 @@ public class DeleteUserTaskCmd implements Command<Void>, Serializable {
 
     @Override
     public Void execute(CommandContext commandContext) {
-        BpmnModel bpmnModel = ProcessDefinitionUtil.getBpmnModel(processInstanceId,processDefinitionId);
+        BpmnModel bpmnModel = ProcessDefinitionUtil.getBpmnModel(processInstanceId,processDefinitionId,true);
         Process process = bpmnModel.getMainProcess();
         FlowElement flowElement = process.getFlowElement(taskDefKey);
         if (flowElement instanceof UserTask) {
@@ -69,17 +70,29 @@ public class DeleteUserTaskCmd implements Command<Void>, Serializable {
             userTask.setEditFlag("1");
             userTask.setDeleteFlag("1");
             userTask.setSkipExpression("${true}");
-            ProcessDefinitionUtil.updateProcess(processInstanceId,bpmnModel);
+            try{
+                ProcessDefinitionUtil.updateProcess(processInstanceId,bpmnModel);
+            } catch (Exception e) {
+                throw new FlowableIllegalArgumentException("节点删除异常："+e.getMessage());
+            }
+
             //如果是删除进行中的节点，则要处理excution ，删除进行中的任务需要删除掉
             //处理当前的excution.task
             // 当前流程审批人编辑判断
+            if (StringUtils.isEmpty(taskId)) {
+                return null;
+            }
+
             TaskEntity task = CommandContextUtil.getTaskService(commandContext).getTask(taskId);
+            if (task==null) {
+                throw new FlowableIllegalArgumentException("节点删除异常：当前任务ID对应的任务id不存在："+taskId);
+            }
             if (taskDefKey.equals(task.getTaskDefinitionKey())) {
                 // 如果删除的是当前节点，就要处理，当前的任务
                 if (task.getExecutionId()!=null) {
                     ExecutionEntity executionEntity = CommandContextUtil.getExecutionEntityManager(commandContext).findById(task.getExecutionId());
                     if (flowElement instanceof FlowNode) {
-                        ActivityBehavior activityBehavior = (ActivityBehavior) (FlowNode) ((UserTask) flowElement).getBehavior();
+                        ActivityBehavior activityBehavior = (ActivityBehavior) ((UserTask) flowElement).getBehavior();
                         FlowNodeActivityBehavior flowNodeActivityBehavior = (FlowNodeActivityBehavior) activityBehavior;
                         flowNodeActivityBehavior.deleteFlowTask(executionEntity);
                         flowNodeActivityBehavior.leave(executionEntity);

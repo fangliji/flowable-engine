@@ -149,7 +149,12 @@ public class IdentityLinkServiceImpl extends CommonServiceImpl<IdentityLinkServi
     public void deleteIdentityLinksByTaskId(String taskId) {
         getIdentityLinkEntityManager().deleteIdentityLinksByTaskId(taskId);
     }
-    
+
+    @Override
+    public void deleteIdentityLinksByTaskIdImmediately(String taskId) {
+        getIdentityLinkEntityManager().deleteIdentityLinksByTaskIdImmediately(taskId);
+    }
+
     @Override
     public void deleteIdentityLinksByProcessDefinitionId(String processDefinitionId) {
         getIdentityLinkEntityManager().deleteIdentityLinksByProcDef(processDefinitionId);

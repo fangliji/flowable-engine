@@ -25,5 +25,7 @@ public interface DeploymentSettings {
 
     String DERIVED_PROCESS_DEFINITION_ID = "derivedProcessDefinitionId";
 
+    String DONT_CACHE_DEPLOYMENT = "DontCacheDeployment";
+
     String DERIVED_PROCESS_DEFINITION_ROOT_ID = "derivedProcessDefinitionRootId";
 }

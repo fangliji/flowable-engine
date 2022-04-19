@@ -32,6 +32,7 @@ public class UserTask extends Task {
     protected String businessCalendarName;
     protected String category;
     protected String extensionId;
+
     protected List<String> candidateUsers = new ArrayList<>();
     protected List<String> candidateGroups = new ArrayList<>();
     protected List<FormProperty> formProperties = new ArrayList<>();

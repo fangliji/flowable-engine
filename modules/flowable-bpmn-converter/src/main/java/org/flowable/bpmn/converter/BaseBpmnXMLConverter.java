@@ -68,7 +68,8 @@ public abstract class BaseBpmnXMLConverter implements BpmnXMLConstants {
 
     protected static final Logger LOGGER = LoggerFactory.getLogger(BaseBpmnXMLConverter.class);
 
-    protected static final List<ExtensionAttribute> defaultElementAttributes = Arrays.asList(new ExtensionAttribute(ATTRIBUTE_ID), new ExtensionAttribute(ATTRIBUTE_NAME));
+    protected static final List<ExtensionAttribute> defaultElementAttributes = Arrays.asList(new ExtensionAttribute(ATTRIBUTE_ID), new ExtensionAttribute(ATTRIBUTE_NAME),new ExtensionAttribute(ATTRIBUTE_EDIT_FLAG),new ExtensionAttribute(ATTRIBUTE_DELETE_FLAG));
+
 
     protected static final List<ExtensionAttribute> defaultActivityAttributes = Arrays.asList(
             new ExtensionAttribute(ATTRIBUTE_ACTIVITY_ASYNCHRONOUS),
@@ -80,6 +81,8 @@ public abstract class BaseBpmnXMLConverter implements BpmnXMLConstants {
 
         String elementId = xtr.getAttributeValue(null, ATTRIBUTE_ID);
         String elementName = xtr.getAttributeValue(null, ATTRIBUTE_NAME);
+        String editFlag = xtr.getAttributeValue(null, ATTRIBUTE_EDIT_FLAG);
+        String deleteFlag = xtr.getAttributeValue(null, ATTRIBUTE_DELETE_FLAG);
         boolean async = parseAsync(xtr);
         boolean triggerable = parseTriggerable(xtr);
         boolean notExclusive = parseNotExclusive(xtr);
@@ -105,7 +108,8 @@ public abstract class BaseBpmnXMLConverter implements BpmnXMLConstants {
             FlowElement currentFlowElement = (FlowElement) parsedElement;
             currentFlowElement.setId(elementId);
             currentFlowElement.setName(elementName);
-
+            currentFlowElement.setEditFlag(editFlag);
+            currentFlowElement.setDeleteFlag(deleteFlag);
             if (currentFlowElement instanceof FlowNode) {
                 FlowNode flowNode = (FlowNode) currentFlowElement;
                 flowNode.setAsynchronous(async);
@@ -159,6 +163,8 @@ public abstract class BaseBpmnXMLConverter implements BpmnXMLConstants {
         writeDefaultAttribute(ATTRIBUTE_ID, baseElement.getId(), xtw);
         if (baseElement instanceof FlowElement) {
             writeDefaultAttribute(ATTRIBUTE_NAME, ((FlowElement) baseElement).getName(), xtw);
+            writeDefaultAttribute(ATTRIBUTE_EDIT_FLAG,((FlowElement) baseElement).getEditFlag(), xtw);
+            writeDefaultAttribute(ATTRIBUTE_DELETE_FLAG,((FlowElement) baseElement).getDeleteFlag(), xtw);
         }
 
         if (baseElement instanceof FlowNode) {
