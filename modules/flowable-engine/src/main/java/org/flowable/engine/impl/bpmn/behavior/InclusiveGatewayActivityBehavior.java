@@ -70,7 +70,7 @@ public class InclusiveGatewayActivityBehavior extends GatewayActivityBehavior im
         while (!oneExecutionCanReachGatewayInstance && executionIterator.hasNext()) {
             ExecutionEntity executionEntity = executionIterator.next();
             if (!executionEntity.getActivityId().equals(execution.getCurrentActivityId())) {
-                if (ExecutionGraphUtil.isReachable(execution.getProcessDefinitionId(), executionEntity.getActivityId(), execution.getCurrentActivityId())) {
+                if (ExecutionGraphUtil.isReachable(execution.getProcessInstanceId(),execution.getProcessDefinitionId(), executionEntity.getActivityId(), execution.getCurrentActivityId())) {
                     //Now check if they are in the same "execution path"
                     if (executionEntity.getParentId().equals(execution.getParentId())) {
                         oneExecutionCanReachGatewayInstance = true;

@@ -13,15 +13,15 @@ import java.util.Map;
  * 创建人：flj
  */
 public class DynamicUpdateUserTaskBuilder {
-    protected String id;
+    protected String taskKey;
     protected List<String> candidateUsers = new ArrayList<>();
 
-    public String getId() {
-        return id;
+    public String getTaskKey() {
+        return taskKey;
     }
 
-    public void setId(String id) {
-        this.id = id;
+    public void setTaskKey(String taskKey) {
+        this.taskKey = taskKey;
     }
 
     public List<String> getCandidateUsers() {

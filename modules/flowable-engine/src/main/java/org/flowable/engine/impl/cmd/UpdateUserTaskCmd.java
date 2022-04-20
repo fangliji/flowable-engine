@@ -56,7 +56,7 @@ public class UpdateUserTaskCmd implements Command<Void>, Serializable {
     public Void execute(CommandContext commandContext) {
         BpmnModel bpmnModel = ProcessDefinitionUtil.getBpmnModel(processInstanceId,processDefinitionId,true);
         Process process = bpmnModel.getMainProcess();
-        FlowElement flowElement = process.getFlowElement(dynamicUpdateUserTaskBuilder.getId());
+        FlowElement flowElement = process.getFlowElement(dynamicUpdateUserTaskBuilder.getTaskKey());
         if (flowElement instanceof UserTask) {
             UserTask userTask = (UserTask) flowElement;
             userTask.setCandidateUsers(dynamicUpdateUserTaskBuilder.getCandidateUsers());
@@ -73,7 +73,7 @@ public class UpdateUserTaskCmd implements Command<Void>, Serializable {
             TaskEntity currentTaskEntity = null;
             for (TaskEntity taskEntity:taskEntities) {
                 // 删除了，重新生成审批人
-                if (dynamicUpdateUserTaskBuilder.getId().equals(taskEntity.getTaskDefinitionKey())) {
+                if (dynamicUpdateUserTaskBuilder.getTaskKey().equals(taskEntity.getTaskDefinitionKey())) {
                     taskId = taskEntity.getId();
                     excutionId = taskEntity.getExecutionId();
                     break;
@@ -90,7 +90,7 @@ public class UpdateUserTaskCmd implements Command<Void>, Serializable {
             }
             // 当前流程审批人编辑判断 TODO:如果编辑的是当前进行中的流程节点，需要生效处理
         } else {
-            throw new FlowableIllegalArgumentException("该节点不支持编辑："+dynamicUpdateUserTaskBuilder.getId());
+            throw new FlowableIllegalArgumentException("该节点不支持编辑："+dynamicUpdateUserTaskBuilder.getTaskKey());
         }
         return null;
     }

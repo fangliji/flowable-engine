@@ -260,7 +260,7 @@ public abstract class AbstractDynamicStateManager {
             } else if (moveExecutionContainer.isMoveToSubProcessInstance()) {
                 //The subProcess model is defined in the callActivity of the current processDefinition or the migrateProcessDefinition if defined
                 ExecutionEntity firstExecution = moveExecutionContainer.getExecutions().get(0);
-                BpmnModel bpmnModel = ProcessDefinitionUtil.getBpmnModel(firstExecution.getProcessDefinitionId());
+                BpmnModel bpmnModel = ProcessDefinitionUtil.getBpmnModel(firstExecution.getProcessInstanceId(),firstExecution.getProcessDefinitionId(),false);
                 currentActivityId = firstExecution.getCurrentActivityId();
                 currentFlowElement = resolveFlowElementFromBpmnModel(bpmnModel, currentActivityId);
 
@@ -291,7 +291,7 @@ public abstract class AbstractDynamicStateManager {
             } else {
                 // Get first execution to get process definition id
                 ExecutionEntity firstExecution = moveExecutionContainer.getExecutions().get(0);
-                BpmnModel bpmnModel = ProcessDefinitionUtil.getBpmnModel(firstExecution.getProcessDefinitionId());
+                BpmnModel bpmnModel = ProcessDefinitionUtil.getBpmnModel(firstExecution.getProcessInstanceId(),firstExecution.getProcessDefinitionId(),false);
                 currentActivityId = firstExecution.getCurrentActivityId();
                 currentFlowElement = resolveFlowElementFromBpmnModel(bpmnModel, currentActivityId);
                 newFlowElement = resolveFlowElementFromBpmnModel(bpmnModelToMigrateTo.orElse(bpmnModel), activityId);

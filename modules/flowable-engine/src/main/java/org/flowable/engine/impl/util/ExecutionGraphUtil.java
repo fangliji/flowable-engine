@@ -69,10 +69,10 @@ public class ExecutionGraphUtil {
     /**
      * Verifies if the element with the given source identifier can reach the element with the target identifier through following sequence flow.
      */
-    public static boolean isReachable(String processDefinitionId, String sourceElementId, String targetElementId) {
+    public static boolean isReachable(String processInstanceId,String processDefinitionId, String sourceElementId, String targetElementId) {
 
         // Fetch source and target elements
-        Process process = ProcessDefinitionUtil.getProcess(processDefinitionId);
+        Process process = ProcessDefinitionUtil.getProcess(processInstanceId,processDefinitionId);
 
         FlowElement sourceFlowElement = process.getFlowElement(sourceElementId, true);
         FlowNode sourceElement = null;
