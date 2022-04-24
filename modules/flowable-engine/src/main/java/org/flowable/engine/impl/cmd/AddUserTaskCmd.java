@@ -56,7 +56,7 @@ public class AddUserTaskCmd implements Command<Void> {
         try {
             ProcessDefinitionUtil.updateProcess(processInstanceId, bpmnModel);
         } catch (Exception e) {
-            throw new FlowableIllegalArgumentException("AddUserTaskCmd"+e.getMessage());
+            throw new FlowableIllegalArgumentException("AddUserTaskCmd"+e.getCause().toString());
         }
         // 更新完成之后，判断是否需要处理节点
         dealJumpToTargetElement(commandContext, flowElement, userTask);

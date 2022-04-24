@@ -77,11 +77,11 @@ public class ErrorPropagation {
         
         if (rootProcessDefinitionIds.size() > 0) {
             for (String processDefinitionId : rootProcessDefinitionIds) {
-                eventMap.putAll(findCatchingEventsForProcess(processDefinitionId, errorCode));
+                eventMap.putAll(findCatchingEventsForProcess(execution.getProcessInstanceId(),processDefinitionId, errorCode));
             }
         }
         
-        eventMap.putAll(findCatchingEventsForProcess(execution.getProcessDefinitionId(), errorCode));
+        eventMap.putAll(findCatchingEventsForProcess(execution.getProcessInstanceId(),execution.getProcessDefinitionId(), errorCode));
         if (eventMap.size() > 0) {
             executeCatch(eventMap, execution, errorCode);
         }
@@ -118,7 +118,7 @@ public class ErrorPropagation {
                 if (parentExecution.getCurrentFlowElement() instanceof FlowElementsContainer) {
                     currentContainer = (FlowElementsContainer) parentExecution.getCurrentFlowElement();
                 } else if (parentExecution.getId().equals(parentExecution.getProcessInstanceId())) {
-                    currentContainer = ProcessDefinitionUtil.getProcess(parentExecution.getProcessDefinitionId());
+                    currentContainer = ProcessDefinitionUtil.getProcess(parentExecution.getProcessInstanceId(),parentExecution.getProcessDefinitionId());
                 }
 
                 if (currentContainer != null) {
@@ -192,7 +192,7 @@ public class ErrorPropagation {
 
     protected static void executeEventHandler(Event event, ExecutionEntity parentExecution, ExecutionEntity currentExecution, String errorId) {
         if (CommandContextUtil.getProcessEngineConfiguration() != null && CommandContextUtil.getProcessEngineConfiguration().getEventDispatcher().isEnabled()) {
-            BpmnModel bpmnModel = ProcessDefinitionUtil.getBpmnModel(parentExecution.getProcessDefinitionId());
+            BpmnModel bpmnModel = ProcessDefinitionUtil.getBpmnModel(parentExecution.getProcessInstanceId(),parentExecution.getProcessDefinitionId(),false);
             if (bpmnModel != null) {
 
                 String errorCode = bpmnModel.getErrors().get(errorId);
@@ -236,10 +236,10 @@ public class ErrorPropagation {
         }
     }
 
-    protected static Map<String, List<Event>> findCatchingEventsForProcess(String processDefinitionId, String errorCode) {
+    protected static Map<String, List<Event>> findCatchingEventsForProcess(String processInstanceId,String processDefinitionId, String errorCode) {
         Map<String, List<Event>> eventMap = new HashMap<>();
-        Process process = ProcessDefinitionUtil.getProcess(processDefinitionId);
-        BpmnModel bpmnModel = ProcessDefinitionUtil.getBpmnModel(processDefinitionId);
+        Process process = ProcessDefinitionUtil.getProcess(processInstanceId,processDefinitionId);
+        BpmnModel bpmnModel = ProcessDefinitionUtil.getBpmnModel(processInstanceId,processDefinitionId,false);
 
         String compareErrorCode = retrieveErrorCode(bpmnModel, errorCode);
 
@@ -377,7 +377,7 @@ public class ErrorPropagation {
         Event selectedEvent = null;
         String selectedEventErrorCode = null;
         
-        BpmnModel bpmnModel = ProcessDefinitionUtil.getBpmnModel(parentExecution.getProcessDefinitionId());
+        BpmnModel bpmnModel = ProcessDefinitionUtil.getBpmnModel(parentExecution.getProcessInstanceId(),parentExecution.getProcessDefinitionId(),false);
         for (Event event : events) {
             String errorCode = getErrorCodeFromErrorEventDefinition(event);
             if (bpmnModel != null) {

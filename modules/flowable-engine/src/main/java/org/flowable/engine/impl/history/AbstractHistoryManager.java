@@ -332,7 +332,7 @@ public abstract class AbstractHistoryManager extends AbstractManager implements 
         try {
             ProcessDefinition processDefinition = ProcessDefinitionUtil.getProcessDefinition(processDefinitionId);
             
-            BpmnModel bpmnModel = ProcessDefinitionUtil.getBpmnModel(processDefinitionId);
+            BpmnModel bpmnModel = ProcessDefinitionUtil.getBpmnModel(null,processDefinitionId,false);
     
             Process process = bpmnModel.getProcessById(processDefinition.getKey());
             if (process.getExtensionElements().containsKey("historyLevel")) {

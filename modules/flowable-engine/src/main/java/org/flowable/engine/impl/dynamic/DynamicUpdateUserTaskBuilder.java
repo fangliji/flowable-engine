@@ -15,6 +15,15 @@ import java.util.Map;
 public class DynamicUpdateUserTaskBuilder {
     protected String taskKey;
     protected List<String> candidateUsers = new ArrayList<>();
+    protected int flag;
+
+    public int getFlag() {
+        return flag;
+    }
+
+    public void setFlag(int flag) {
+        this.flag = flag;
+    }
 
     public String getTaskKey() {
         return taskKey;

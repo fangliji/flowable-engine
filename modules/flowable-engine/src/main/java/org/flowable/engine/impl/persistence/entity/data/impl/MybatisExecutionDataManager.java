@@ -114,7 +114,7 @@ public class MybatisExecutionDataManager extends AbstractProcessDataManager<Exec
         // Find execution in db or cache to check process definition setting for execution fetch.
         // If not set, no extra work is done. The execution is in the cache however now as a side-effect of calling this method.
         ExecutionEntity executionEntity = (cachedExecutionEntity != null) ? cachedExecutionEntity : super.findById(executionId);
-        if (!ProcessDefinitionUtil.getProcess(executionEntity.getProcessDefinitionId()).isEnableEagerExecutionTreeFetching()) {
+        if (!ProcessDefinitionUtil.getProcess(executionEntity.getProcessInstanceId(),executionEntity.getProcessDefinitionId()).isEnableEagerExecutionTreeFetching()) {
             return false;
         }
         

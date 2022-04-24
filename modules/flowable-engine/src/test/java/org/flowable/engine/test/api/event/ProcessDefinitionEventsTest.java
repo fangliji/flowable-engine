@@ -167,7 +167,7 @@ public class ProcessDefinitionEventsTest extends PluggableFlowableTestCase {
                     case ENTITY_CREATED:
                         if (entity instanceof ProcessDefinitionEntity) {
                             // It is necessary to have process already present on the ProcessDefinitionEntity CREATE event
-                            ProcessDefinitionUtil.getProcess(((ProcessDefinitionEntity) entity).getId());
+                            ProcessDefinitionUtil.getProcess(null,((ProcessDefinitionEntity) entity).getId());
 
                         }
                     default:

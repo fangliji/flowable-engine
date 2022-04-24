@@ -194,7 +194,7 @@ public class DefaultInternalJobManager implements InternalJobManager {
 
         int maxIterations = 1;
         if (jobEntity.getProcessDefinitionId() != null) {
-            org.flowable.bpmn.model.Process process = ProcessDefinitionUtil.getProcess(jobEntity.getProcessDefinitionId());
+            org.flowable.bpmn.model.Process process = ProcessDefinitionUtil.getProcess(jobEntity.getProcessInstanceId(),jobEntity.getProcessDefinitionId());
             maxIterations = getMaxIterations(process, activityId);
             if (maxIterations <= 1) {
                 maxIterations = getMaxIterations(process, activityId);

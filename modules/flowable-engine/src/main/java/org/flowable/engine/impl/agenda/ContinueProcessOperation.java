@@ -83,7 +83,7 @@ public class ContinueProcessOperation extends AbstractOperation {
     }
 
     protected void executeProcessStartExecutionListeners() {
-        org.flowable.bpmn.model.Process process = ProcessDefinitionUtil.getProcess(execution.getProcessDefinitionId());
+        org.flowable.bpmn.model.Process process = ProcessDefinitionUtil.getProcess(execution.getProcessInstanceId(),execution.getProcessDefinitionId());
         executeExecutionListeners(process, execution.getParent(), ExecutionListener.EVENTNAME_START);
     }
 

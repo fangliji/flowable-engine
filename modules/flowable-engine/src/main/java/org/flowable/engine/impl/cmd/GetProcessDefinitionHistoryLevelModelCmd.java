@@ -49,7 +49,7 @@ public class GetProcessDefinitionHistoryLevelModelCmd implements Command<History
 
         ProcessDefinition processDefinition = CommandContextUtil.getProcessDefinitionEntityManager(commandContext).findById(processDefinitionId);
 
-        BpmnModel bpmnModel = ProcessDefinitionUtil.getBpmnModel(processDefinitionId);
+        BpmnModel bpmnModel = ProcessDefinitionUtil.getBpmnModel(null,processDefinitionId,false);
 
         Process process = bpmnModel.getProcessById(processDefinition.getKey());
         if (process.getExtensionElements().containsKey("historyLevel")) {

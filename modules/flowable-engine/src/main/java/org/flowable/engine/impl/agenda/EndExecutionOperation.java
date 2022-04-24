@@ -120,7 +120,7 @@ public class EndExecutionOperation extends AbstractOperation {
             LOGGER.debug("Active executions found. Process instance {} will not be ended.", processInstanceId);
         }
 
-        Process process = ProcessDefinitionUtil.getProcess(processInstanceExecution.getProcessDefinitionId());
+        Process process = ProcessDefinitionUtil.getProcess(processInstanceExecution.getProcessInstanceId(),processInstanceExecution.getProcessDefinitionId());
 
         // Execute execution listeners for process end.
         if (CollectionUtil.isNotEmpty(process.getExecutionListeners())) {

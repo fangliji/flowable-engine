@@ -25,7 +25,7 @@ public class GetProcessOnDefinitionInitializedListener extends AbstractFlowableE
     @Override
     protected void entityInitialized(FlowableEngineEntityEvent event) {
         if (event.getEntity() instanceof ProcessDefinitionEntity) {
-            Process process = ProcessDefinitionUtil.getProcess(((ProcessDefinitionEntity) event.getEntity()).getId());
+            Process process = ProcessDefinitionUtil.getProcess(null,((ProcessDefinitionEntity) event.getEntity()).getId());
             processId = process.getId();
         }
     }

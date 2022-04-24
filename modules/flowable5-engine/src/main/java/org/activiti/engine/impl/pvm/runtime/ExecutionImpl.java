@@ -476,7 +476,7 @@ public class ExecutionImpl implements
         if (currentFlowElement == null) {
             String processDefinitionId = getProcessDefinitionId();
             if (processDefinitionId != null) {
-                org.flowable.bpmn.model.Process process = ProcessDefinitionUtil.getProcess(processDefinitionId);
+                org.flowable.bpmn.model.Process process = ProcessDefinitionUtil.getProcess(this.processInstance.getProcessInstanceId(),processDefinitionId);
                 currentFlowElement = process.getFlowElement(getCurrentActivityId(), true);
             }
         }

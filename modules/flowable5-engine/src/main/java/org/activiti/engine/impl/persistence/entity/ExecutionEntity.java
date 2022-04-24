@@ -1371,7 +1371,7 @@ public class ExecutionEntity extends VariableScopeImpl implements ActivityExecut
         if (currentFlowElement == null) {
             String processDefinitionId = getProcessDefinitionId();
             if (processDefinitionId != null) {
-                org.flowable.bpmn.model.Process process = ProcessDefinitionUtil.getProcess(processDefinitionId);
+                org.flowable.bpmn.model.Process process = ProcessDefinitionUtil.getProcess(this.processInstanceId,processDefinitionId);
                 currentFlowElement = process.getFlowElement(getCurrentActivityId(), true);
             }
         }

@@ -116,7 +116,7 @@ public class GetDataObjectsCmd implements Command<Map<String, DataObject>>, Seri
                     executionEntity = executionEntity.getParent();
                 }
 
-                BpmnModel bpmnModel = ProcessDefinitionUtil.getBpmnModel(execution.getProcessDefinitionId());
+                BpmnModel bpmnModel = ProcessDefinitionUtil.getBpmnModel(execution.getProcessInstanceId(),execution.getProcessDefinitionId(),false);
                 ValuedDataObject foundDataObject = null;
                 if (executionEntity.getParentId() == null) {
                     for (ValuedDataObject dataObject : bpmnModel.getMainProcess().getDataObjects()) {

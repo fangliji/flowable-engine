@@ -56,7 +56,7 @@ public class GetFormDefinitionsForProcessDefinitionCmd implements Command<List<F
             throw new FlowableObjectNotFoundException("Cannot find process definition for id: " + processDefinitionId, ProcessDefinition.class);
         }
 
-        BpmnModel bpmnModel = ProcessDefinitionUtil.getBpmnModel(processDefinitionId);
+        BpmnModel bpmnModel = ProcessDefinitionUtil.getBpmnModel(null,processDefinitionId,false);
 
         if (bpmnModel == null) {
             throw new FlowableObjectNotFoundException("Cannot find bpmn model for process definition id: " + processDefinitionId, BpmnModel.class);

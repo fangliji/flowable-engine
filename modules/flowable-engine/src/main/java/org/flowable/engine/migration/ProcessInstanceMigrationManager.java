@@ -21,15 +21,15 @@ import org.flowable.engine.impl.migration.ProcessInstanceMigrationValidationResu
  */
 public interface ProcessInstanceMigrationManager {
 
-    ProcessInstanceMigrationValidationResult validateMigrateProcessInstancesOfProcessDefinition(String processDefinitionKey, int processDefinitionVersion, String processDefinitionTenant, ProcessInstanceMigrationDocument processInstanceMigrationDocument, CommandContext commandContext);
+    ProcessInstanceMigrationValidationResult validateMigrateProcessInstancesOfProcessDefinition(String processInstanceId,String processDefinitionKey, int processDefinitionVersion, String processDefinitionTenant, ProcessInstanceMigrationDocument processInstanceMigrationDocument, CommandContext commandContext);
 
-    ProcessInstanceMigrationValidationResult validateMigrateProcessInstancesOfProcessDefinition(String processDefinitionId, ProcessInstanceMigrationDocument processInstanceMigrationDocument, CommandContext commandContext);
+    ProcessInstanceMigrationValidationResult validateMigrateProcessInstancesOfProcessDefinition(String processInstanceId,String processDefinitionId, ProcessInstanceMigrationDocument processInstanceMigrationDocument, CommandContext commandContext);
 
     ProcessInstanceMigrationValidationResult validateMigrateProcessInstance(String processInstanceId, ProcessInstanceMigrationDocument processInstanceMigrationDocument, CommandContext commandContext);
 
     void migrateProcessInstance(String processInstanceId, ProcessInstanceMigrationDocument document, CommandContext commandContext);
 
-    void migrateProcessInstancesOfProcessDefinition(String procDefKey, int procDefVer, String procDefTenantId, ProcessInstanceMigrationDocument document, CommandContext commandContext);
+    void migrateProcessInstancesOfProcessDefinition(String processInstanceId, String procDefKey, int procDefVer, String procDefTenantId, ProcessInstanceMigrationDocument document, CommandContext commandContext);
 
-    void migrateProcessInstancesOfProcessDefinition(String processDefinitionId, ProcessInstanceMigrationDocument document, CommandContext commandContext);
+    void migrateProcessInstancesOfProcessDefinition(String processInstanceId, String processDefinitionId, ProcessInstanceMigrationDocument document, CommandContext commandContext);
 }

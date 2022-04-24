@@ -164,7 +164,7 @@ public class InjectUserTaskInProcessInstanceCmd extends AbstractDynamicInjection
         ExecutionEntityManager executionEntityManager = CommandContextUtil.getExecutionEntityManager(commandContext);
         ExecutionEntity execution = executionEntityManager.createChildExecution(processInstance);
         
-        BpmnModel bpmnModel = ProcessDefinitionUtil.getBpmnModel(processDefinitionEntity.getId());
+        BpmnModel bpmnModel = ProcessDefinitionUtil.getBpmnModel(null,processDefinitionEntity.getId(),false);
         UserTask userTask = (UserTask) bpmnModel.getProcessById(processDefinitionEntity.getKey()).getFlowElement(dynamicUserTaskBuilder.getDynamicTaskId());
         execution.setCurrentFlowElement(userTask);
 

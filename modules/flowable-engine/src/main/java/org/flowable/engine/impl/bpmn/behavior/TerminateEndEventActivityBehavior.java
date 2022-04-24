@@ -216,7 +216,7 @@ public class TerminateEndEventActivityBehavior extends FlowNodeActivityBehavior 
     }
 
     protected void sendProcessInstanceCompletedEvent(ExecutionEntity execution, FlowElement terminateEndEvent) {
-        Process process = ProcessDefinitionUtil.getProcess(execution.getProcessDefinitionId());
+        Process process = ProcessDefinitionUtil.getProcess(execution.getProcessInstanceId(),execution.getProcessDefinitionId());
         CommandContextUtil.getProcessEngineConfiguration().getListenerNotificationHelper()
             .executeExecutionListeners(process, execution, ExecutionListener.EVENTNAME_END);
         
@@ -228,7 +228,7 @@ public class TerminateEndEventActivityBehavior extends FlowNodeActivityBehavior 
                 // otherwise a regular cancel event of the process instance will be fired (see above).
                 boolean fireEvent = true;
                 if (!terminateAll) {
-                    Process processForExecution = ProcessDefinitionUtil.getProcess(execution.getProcessDefinitionId());
+                    Process processForExecution = ProcessDefinitionUtil.getProcess(execution.getProcessInstanceId(),execution.getProcessDefinitionId());
                     Process processForTerminateEndEvent = getProcessForTerminateEndEvent(terminateEndEvent);
                     fireEvent = processForExecution.getId().equals(processForTerminateEndEvent.getId());
                 }

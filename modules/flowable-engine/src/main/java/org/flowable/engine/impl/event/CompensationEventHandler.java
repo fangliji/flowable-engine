@@ -54,7 +54,7 @@ public class CompensationEventHandler implements EventHandler {
         ExecutionEntity compensatingExecution = CommandContextUtil.getExecutionEntityManager(commandContext).findById(configuration);
 
         String processDefinitionId = compensatingExecution.getProcessDefinitionId();
-        Process process = ProcessDefinitionUtil.getProcess(processDefinitionId);
+        Process process = ProcessDefinitionUtil.getProcess(compensatingExecution.getProcessInstanceId(),processDefinitionId);
         if (process == null) {
             throw new FlowableException("Cannot start process instance. Process model (id = " + processDefinitionId + ") could not be found");
         }

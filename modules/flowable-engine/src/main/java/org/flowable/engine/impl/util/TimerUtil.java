@@ -191,7 +191,7 @@ public class TimerUtil {
         TimerJobService timerJobService = CommandContextUtil.getTimerJobService();
         TimerJobEntity timerJob = timerJobService.findTimerJobById(timerJobId);
         if (timerJob != null) {
-            BpmnModel bpmnModel = ProcessDefinitionUtil.getBpmnModel(timerJob.getProcessDefinitionId());
+            BpmnModel bpmnModel = ProcessDefinitionUtil.getBpmnModel(timerJob.getProcessInstanceId(),timerJob.getProcessDefinitionId(),false);
             Event eventElement = (Event) bpmnModel.getFlowElement(TimerEventHandler.getActivityIdFromConfiguration(timerJob.getJobHandlerConfiguration()));
             boolean isInterruptingTimer = false;
             if (eventElement instanceof BoundaryEvent) {

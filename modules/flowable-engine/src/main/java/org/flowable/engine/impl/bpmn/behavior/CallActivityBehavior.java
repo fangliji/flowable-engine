@@ -94,7 +94,7 @@ public class CallActivityBehavior extends AbstractBpmnActivityBehavior implement
         ProcessDefinition processDefinition = getProcessDefinition(execution, callActivity, processEngineConfiguration);
 
         // Get model from cache
-        Process subProcess = ProcessDefinitionUtil.getProcess(processDefinition.getId());
+        Process subProcess = ProcessDefinitionUtil.getProcess(execution.getProcessInstanceId(),processDefinition.getId());
         if (subProcess == null) {
             throw new FlowableException("Cannot start a sub process instance. Process model " + processDefinition.getName() + " (id = " + processDefinition.getId() + ") could not be found");
         }

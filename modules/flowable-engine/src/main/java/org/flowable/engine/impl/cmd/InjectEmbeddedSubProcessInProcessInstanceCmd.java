@@ -62,7 +62,7 @@ public class InjectEmbeddedSubProcessInProcessInstanceCmd extends AbstractDynami
 
         ExecutionEntityManager executionEntityManager = CommandContextUtil.getExecutionEntityManager(commandContext);
         
-        BpmnModel bpmnModel = ProcessDefinitionUtil.getBpmnModel(processDefinitionEntity.getId());
+        BpmnModel bpmnModel = ProcessDefinitionUtil.getBpmnModel(null,processDefinitionEntity.getId(),false);
         SubProcess subProcess = (SubProcess) bpmnModel.getFlowElement(dynamicEmbeddedSubProcessBuilder.getDynamicSubProcessId());
         ExecutionEntity subProcessExecution = executionEntityManager.createChildExecution(processInstance);
         subProcessExecution.setScope(true);

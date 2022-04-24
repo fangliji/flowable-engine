@@ -39,6 +39,6 @@ public class GetBpmnModelCmd implements Command<BpmnModel>, Serializable {
             throw new FlowableIllegalArgumentException("processDefinitionId is null");
         }
 
-        return ProcessDefinitionUtil.getBpmnModel(processDefinitionId);
+        return ProcessDefinitionUtil.getBpmnModel(null,processDefinitionId,false);
     }
 }

@@ -113,7 +113,7 @@ public class SetProcessDefinitionVersionCmd implements Command<Void>, Serializab
 
     protected void validateAndSwitchVersionOfExecution(CommandContext commandContext, ExecutionEntity execution, ProcessDefinition newProcessDefinition) {
         // check that the new process definition version contains the current activity
-        org.flowable.bpmn.model.Process process = ProcessDefinitionUtil.getProcess(newProcessDefinition.getId());
+        org.flowable.bpmn.model.Process process = ProcessDefinitionUtil.getProcess(execution.getProcessInstanceId(),newProcessDefinition.getId());
         if (execution.getActivityId() != null && process.getFlowElement(execution.getActivityId(), true) == null) {
             throw new FlowableException("The new process definition " + "(key = '" + newProcessDefinition.getKey() + "') " + "does not contain the current activity " + "(id = '"
                     + execution.getActivityId() + "') " + "of the process instance " + "(id = '" + processInstanceId + "').");

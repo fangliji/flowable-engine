@@ -119,7 +119,7 @@ public class StartProcessInstanceCmd<T> implements Command<ProcessInstance>, Ser
         if (hasStartFormData()) {
 
             FormService formService = CommandContextUtil.getFormService(commandContext);
-            BpmnModel bpmnModel = ProcessDefinitionUtil.getBpmnModel(processDefinition.getId());
+            BpmnModel bpmnModel = ProcessDefinitionUtil.getBpmnModel(null,processDefinition.getId(),false);
             Process process = bpmnModel.getProcessById(processDefinition.getKey());
             FlowElement startElement = process.getInitialFlowElement();
 

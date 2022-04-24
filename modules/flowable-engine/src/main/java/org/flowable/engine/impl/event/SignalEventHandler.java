@@ -48,7 +48,7 @@ public class SignalEventHandler extends AbstractEventHandler {
 
             // Find initial flow element matching the signal start event
             String processDefinitionId = eventSubscription.getProcessDefinitionId();
-            org.flowable.bpmn.model.Process process = ProcessDefinitionUtil.getProcess(processDefinitionId);
+            org.flowable.bpmn.model.Process process = ProcessDefinitionUtil.getProcess(eventSubscription.getProcessInstanceId(),processDefinitionId);
             ProcessDefinition processDefinition = ProcessDefinitionUtil.getProcessDefinition(processDefinitionId);
 
             if (processDefinition.isSuspended()) {

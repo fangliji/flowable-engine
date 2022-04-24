@@ -63,7 +63,7 @@ public class InjectParallelEmbeddedSubProcessCmd extends AbstractDynamicInjectio
         TaskEntity taskEntity = CommandContextUtil.getTaskService().getTask(taskId);
         ExecutionEntity executionAtTask = executionEntityManager.findById(taskEntity.getExecutionId());
         
-        BpmnModel bpmnModel = ProcessDefinitionUtil.getBpmnModel(processDefinitionEntity.getId());
+        BpmnModel bpmnModel = ProcessDefinitionUtil.getBpmnModel(null,processDefinitionEntity.getId(),false);
         FlowElement taskElement = bpmnModel.getFlowElement(executionAtTask.getCurrentActivityId());
         FlowElement subProcessElement = bpmnModel.getFlowElement(((SubProcess) taskElement.getParentContainer()).getId());
         ExecutionEntity subProcessExecution = executionEntityManager.createChildExecution(executionAtTask.getParent());

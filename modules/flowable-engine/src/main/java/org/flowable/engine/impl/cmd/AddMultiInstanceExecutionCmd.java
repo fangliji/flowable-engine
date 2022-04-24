@@ -65,7 +65,7 @@ public class AddMultiInstanceExecutionCmd implements Command<Execution>, Seriali
         ExecutionEntity childExecution = executionEntityManager.createChildExecution(miExecution);
         childExecution.setCurrentFlowElement(miExecution.getCurrentFlowElement());
         
-        BpmnModel bpmnModel = ProcessDefinitionUtil.getBpmnModel(miExecution.getProcessDefinitionId());
+        BpmnModel bpmnModel = ProcessDefinitionUtil.getBpmnModel(miExecution.getProcessInstanceId(),miExecution.getProcessDefinitionId(),false);
         Activity miActivityElement = (Activity) bpmnModel.getFlowElement(miExecution.getActivityId());
         MultiInstanceLoopCharacteristics multiInstanceLoopCharacteristics = miActivityElement.getLoopCharacteristics();
         

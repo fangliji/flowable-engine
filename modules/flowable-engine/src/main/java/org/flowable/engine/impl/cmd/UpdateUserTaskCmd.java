@@ -59,12 +59,19 @@ public class UpdateUserTaskCmd implements Command<Void>, Serializable {
         FlowElement flowElement = process.getFlowElement(dynamicUpdateUserTaskBuilder.getTaskKey());
         if (flowElement instanceof UserTask) {
             UserTask userTask = (UserTask) flowElement;
-            userTask.setCandidateUsers(dynamicUpdateUserTaskBuilder.getCandidateUsers());
+            if (Integer.valueOf(0).equals(dynamicUpdateUserTaskBuilder.getFlag())) {
+               List<String> candidateUsers = userTask.getCandidateUsers();
+               if (candidateUsers!=null) {
+                   candidateUsers.addAll(dynamicUpdateUserTaskBuilder.getCandidateUsers());
+               }
+            } else {
+                userTask.setCandidateUsers(dynamicUpdateUserTaskBuilder.getCandidateUsers());
+            }
             userTask.setEditFlag("1");
             try {
                 ProcessDefinitionUtil.updateProcess(processInstanceId, bpmnModel);
             } catch (Exception e) {
-                throw new FlowableIllegalArgumentException("updateUserTaskCmd"+e.getMessage());
+                throw new FlowableIllegalArgumentException("updateUserTaskCmd"+e.getCause().toString());
             }
             // 如果是当前正在执行的节点编辑，则需要往下走编辑人员的接口
             List<TaskEntity> taskEntities = CommandContextUtil.getTaskService(commandContext).findTasksByProcessInstanceId(processInstanceId);

@@ -77,7 +77,7 @@ public class IntermediateThrowCompensationEventActivityBehavior extends FlowNode
                 // check if compensation activity was referenced directly (backwards compatibility pre 6.4.0)
                 
                 String processDefinitionId = execution.getProcessDefinitionId();
-                Process process = ProcessDefinitionUtil.getProcess(processDefinitionId);
+                Process process = ProcessDefinitionUtil.getProcess(execution.getProcessInstanceId(),processDefinitionId);
                 if (process == null) {
                     throw new FlowableException("Process model (id = " + processDefinitionId + ") could not be found");
                 }
@@ -112,7 +112,7 @@ public class IntermediateThrowCompensationEventActivityBehavior extends FlowNode
         } else {
 
             // If no activity ref is provided, it is broadcast to the current sub process / process instance
-            Process process = ProcessDefinitionUtil.getProcess(execution.getProcessDefinitionId());
+            Process process = ProcessDefinitionUtil.getProcess(execution.getProcessInstanceId(),execution.getProcessDefinitionId());
 
             FlowElementsContainer flowElementsContainer = null;
             if (throwEvent.getSubProcess() == null) {

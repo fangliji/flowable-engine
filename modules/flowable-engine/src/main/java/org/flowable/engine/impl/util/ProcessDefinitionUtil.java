@@ -69,7 +69,7 @@ public class ProcessDefinitionUtil {
         }
     }
 
-    public static Process getProcess(String processDefinitionId) {
+    /*public static Process getProcess(String processDefinitionId) {
         if (Context.getCommandContext() == null) {
             throw new FlowableException("Cannot get process model: no current command context is active");
             
@@ -83,7 +83,7 @@ public class ProcessDefinitionUtil {
             ProcessDefinition processDefinitionEntity = deploymentManager.findDeployedProcessDefinitionById(processDefinitionId);
             return deploymentManager.resolveProcessDefinition(processDefinitionEntity).getProcess();
         }
-    }
+    }*/
 
     public static Process getProcess(String processInstanceId,String processDefinitionId) {
        if (Context.getCommandContext() == null) {
@@ -280,7 +280,7 @@ public class ProcessDefinitionUtil {
         }
     }
 
-    public static BpmnModel getBpmnModel(String processDefinitionId) {
+    /*public static BpmnModel getBpmnModel(String processDefinitionId) {
         if (CommandContextUtil.getProcessEngineConfiguration() == null) {
             return Flowable5Util.getFlowable5CompatibilityHandler().getProcessDefinitionBpmnModel(processDefinitionId);
 
@@ -291,16 +291,16 @@ public class ProcessDefinitionUtil {
             ProcessDefinition processDefinitionEntity = deploymentManager.findDeployedProcessDefinitionById(processDefinitionId);
             return deploymentManager.resolveProcessDefinition(processDefinitionEntity).getBpmnModel();
         }
-    }
+    }*/
 
 
-    public static BpmnModel getBpmnModelFromCache(String processDefinitionId) {
+  /*  public static BpmnModel getBpmnModelFromCache(String processDefinitionId) {
         ProcessDefinitionCacheEntry cacheEntry = CommandContextUtil.getProcessEngineConfiguration().getProcessDefinitionCache().get(processDefinitionId);
         if (cacheEntry != null) {
             return cacheEntry.getBpmnModel();
         }
         return null;
-    }
+    }*/
 
     public static boolean isProcessDefinitionSuspended(String processDefinitionId) {
         ProcessDefinitionEntity processDefinition = getProcessDefinitionFromDatabase(processDefinitionId);

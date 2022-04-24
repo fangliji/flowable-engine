@@ -243,7 +243,9 @@ public abstract class AbstractDynamicStateManager {
     protected void prepareMoveExecutionEntityContainer(MoveExecutionEntityContainer moveExecutionContainer, Optional<String> migrateToProcessDefinitionId, CommandContext commandContext) {
         ExpressionManager expressionManager = CommandContextUtil.getProcessEngineConfiguration(commandContext).getExpressionManager();
 
-        Optional<BpmnModel> bpmnModelToMigrateTo = migrateToProcessDefinitionId.map(ProcessDefinitionUtil::getBpmnModel);
+        Optional<BpmnModel> bpmnModelToMigrateTo = migrateToProcessDefinitionId.map(a->{
+            return ProcessDefinitionUtil.getBpmnModel(null,a,false);
+        });
         boolean canContainerDirectMigrate = (moveExecutionContainer.getMoveToActivityIds().size() == 1) && (moveExecutionContainer.getExecutions().size() == 1);
         for (String activityId : moveExecutionContainer.getMoveToActivityIds()) {
             FlowElement currentFlowElement;
@@ -251,8 +253,8 @@ public abstract class AbstractDynamicStateManager {
             String currentActivityId;
             if (moveExecutionContainer.isMoveToParentProcess()) {
                 String parentProcessDefinitionId = moveExecutionContainer.getSuperExecution().getProcessDefinitionId();
-                BpmnModel bpmnModel = ProcessDefinitionUtil.getBpmnModel(parentProcessDefinitionId);
-                BpmnModel modelOfCallActivity = ProcessDefinitionUtil.getBpmnModel(moveExecutionContainer.getExecutions().get(0).getProcessDefinitionId());
+                BpmnModel bpmnModel = ProcessDefinitionUtil.getBpmnModel(null,parentProcessDefinitionId,false);
+                BpmnModel modelOfCallActivity = ProcessDefinitionUtil.getBpmnModel(null,moveExecutionContainer.getExecutions().get(0).getProcessDefinitionId(),false);
                 currentActivityId = moveExecutionContainer.getExecutions().get(0).getCurrentActivityId();
                 currentFlowElement = resolveFlowElementFromBpmnModel(modelOfCallActivity, currentActivityId);
                 newFlowElement = resolveFlowElementFromBpmnModel(bpmnModelToMigrateTo.orElse(bpmnModel), activityId);
@@ -282,7 +284,7 @@ public abstract class AbstractDynamicStateManager {
                 }
                 moveExecutionContainer.setSubProcessDefKey(calledProcessDefKey);
                 ProcessDefinition subProcessDefinition = resolveProcessDefinition(calledProcessDefKey, calledProcessVersion, tenantId, commandContext);
-                BpmnModel subProcessModel = ProcessDefinitionUtil.getBpmnModel(subProcessDefinition.getId());
+                BpmnModel subProcessModel = ProcessDefinitionUtil.getBpmnModel(null,subProcessDefinition.getId(),false);
                 moveExecutionContainer.setSubProcessDefinition(subProcessDefinition);
                 moveExecutionContainer.setSubProcessModel(subProcessModel);
 
@@ -759,8 +761,8 @@ public abstract class AbstractDynamicStateManager {
         ProcessEngineConfigurationImpl processEngineConfiguration = CommandContextUtil.getProcessEngineConfiguration(commandContext);
         ExpressionManager expressionManager = processEngineConfiguration.getExpressionManager();
         ExecutionEntityManager executionEntityManager = CommandContextUtil.getExecutionEntityManager(commandContext);
-
-        Process subProcess = ProcessDefinitionUtil.getProcess(subProcessDefinition.getId());
+        // TODO:subProcessProcessDefinition 暂时不考虑 流程id先给空
+        Process subProcess = ProcessDefinitionUtil.getProcess(null,subProcessDefinition.getId());
         if (subProcess == null) {
             throw new FlowableException("Cannot start a sub process instance. Process model " + subProcessDefinition.getName() + " (id = " + subProcessDefinition.getId() + ") could not be found");
         }
@@ -986,7 +988,7 @@ public abstract class AbstractDynamicStateManager {
                     // For non-interrupting, we register a subscription and startEvent execution if they don't exist already
                     if (eventDefinition instanceof MessageEventDefinition && (eventSubscriptions == null || eventSubscriptions.isEmpty())) {
                         MessageEventDefinition messageEventDefinition = (MessageEventDefinition) eventDefinition;
-                        BpmnModel bpmnModel = ProcessDefinitionUtil.getBpmnModel(eventSubProcessExecution.getProcessDefinitionId());
+                        BpmnModel bpmnModel = ProcessDefinitionUtil.getBpmnModel(null,eventSubProcessExecution.getProcessDefinitionId(),false);
                         if (bpmnModel.containsMessageId(messageEventDefinition.getMessageRef())) {
                             messageEventDefinition.setMessageRef(bpmnModel.getMessage(messageEventDefinition.getMessageRef()).getName());
                         }
@@ -1004,7 +1006,7 @@ public abstract class AbstractDynamicStateManager {
                     }
                     if (eventDefinition instanceof SignalEventDefinition && (eventSubscriptions == null || eventSubscriptions.isEmpty())) {
                         SignalEventDefinition signalEventDefinition = (SignalEventDefinition) eventDefinition;
-                        BpmnModel bpmnModel = ProcessDefinitionUtil.getBpmnModel(eventSubProcessExecution.getProcessDefinitionId());
+                        BpmnModel bpmnModel = ProcessDefinitionUtil.getBpmnModel(null,eventSubProcessExecution.getProcessDefinitionId(),false);
                         Signal signal = null;
                         if (bpmnModel.containsSignalId(signalEventDefinition.getSignalRef())) {
                             signal = bpmnModel.getSignal(signalEventDefinition.getSignalRef());

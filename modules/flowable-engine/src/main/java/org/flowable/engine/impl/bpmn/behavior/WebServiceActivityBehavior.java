@@ -84,7 +84,7 @@ public class WebServiceActivityBehavior extends AbstractBpmnActivityBehavior {
 
     @Override
     public void execute(DelegateExecution execution) {
-        BpmnModel bpmnModel = ProcessDefinitionUtil.getBpmnModel(execution.getProcessDefinitionId());
+        BpmnModel bpmnModel = ProcessDefinitionUtil.getBpmnModel(execution.getProcessInstanceId(),execution.getProcessDefinitionId(),false);
         FlowElement flowElement = execution.getCurrentFlowElement();
 
         IOSpecification ioSpecification = null;

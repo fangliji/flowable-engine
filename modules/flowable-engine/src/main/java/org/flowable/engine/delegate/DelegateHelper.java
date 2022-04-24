@@ -54,7 +54,7 @@ public class DelegateHelper {
      */
     public static void leaveDelegate(DelegateExecution delegateExecution, String sequenceFlowId) {
         String processDefinitionId = delegateExecution.getProcessDefinitionId();
-        org.flowable.bpmn.model.Process process = ProcessDefinitionUtil.getProcess(processDefinitionId);
+        org.flowable.bpmn.model.Process process = ProcessDefinitionUtil.getProcess(delegateExecution.getProcessInstanceId(),processDefinitionId);
         FlowElement flowElement = process.getFlowElement(sequenceFlowId);
         if (flowElement instanceof SequenceFlow) {
             delegateExecution.setCurrentFlowElement(flowElement);
@@ -71,7 +71,7 @@ public class DelegateHelper {
         if (execution == null) {
             throw new FlowableException("Null execution passed");
         }
-        return ProcessDefinitionUtil.getBpmnModel(execution.getProcessDefinitionId());
+        return ProcessDefinitionUtil.getBpmnModel(execution.getProcessInstanceId(),execution.getProcessDefinitionId(),false);
     }
 
     /**
@@ -220,7 +220,7 @@ public class DelegateHelper {
     public static Expression getFieldExpression(DelegateTask task, String fieldName) {
         String eventHandlerId = task.getEventHandlerId();
         if (eventHandlerId != null && task.getProcessDefinitionId() != null) {
-            org.flowable.bpmn.model.Process process = ProcessDefinitionUtil.getProcess(task.getProcessDefinitionId());
+            org.flowable.bpmn.model.Process process = ProcessDefinitionUtil.getProcess(task.getProcessInstanceId(),task.getProcessDefinitionId());
             UserTask userTask = (UserTask) process.getFlowElementMap().get(task.getTaskDefinitionKey());
             
             FlowableListener flowableListener = null;

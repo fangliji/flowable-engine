@@ -94,7 +94,7 @@ public class GetTaskDataObjectsCmd implements Command<Map<String, DataObject>>, 
                     executionEntity = executionEntity.getParent();
                 }
 
-                BpmnModel bpmnModel = ProcessDefinitionUtil.getBpmnModel(executionEntity.getProcessDefinitionId());
+                BpmnModel bpmnModel = ProcessDefinitionUtil.getBpmnModel(executionEntity.getProcessInstanceId(),executionEntity.getProcessDefinitionId(),false);
                 ValuedDataObject foundDataObject = null;
                 if (executionEntity.getParentId() == null) {
                     for (ValuedDataObject dataObject : bpmnModel.getMainProcess().getDataObjects()) {

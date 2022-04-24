@@ -25,14 +25,12 @@ import java.util.List;
 public class DeleteUserTaskCmd implements Command<Void>, Serializable {
     protected String processInstanceId;
     protected String processDefinitionId;
-    protected String taskDefKey;
-    protected String taskId;
+    protected String taskKey;
 
-    public DeleteUserTaskCmd(String processInstanceId, String processDefinitionId, String taskDefKey, String taskId) {
+    public DeleteUserTaskCmd(String processInstanceId, String processDefinitionId, String taskKey) {
         this.processInstanceId = processInstanceId;
         this.processDefinitionId = processDefinitionId;
-        this.taskDefKey = taskDefKey;
-        this.taskId = taskId;
+        this.taskKey = taskKey;
     }
 
     public String getProcessInstanceId() {
@@ -51,19 +49,11 @@ public class DeleteUserTaskCmd implements Command<Void>, Serializable {
         this.processDefinitionId = processDefinitionId;
     }
 
-    public String getTaskId() {
-        return taskId;
-    }
-
-    public void setTaskId(String taskId) {
-        this.taskId = taskId;
-    }
-
     @Override
     public Void execute(CommandContext commandContext) {
         BpmnModel bpmnModel = ProcessDefinitionUtil.getBpmnModel(processInstanceId,processDefinitionId,true);
         Process process = bpmnModel.getMainProcess();
-        FlowElement flowElement = process.getFlowElement(taskDefKey);
+        FlowElement flowElement = process.getFlowElement(taskKey);
         if (flowElement instanceof UserTask) {
             UserTask userTask = (UserTask) flowElement;
             // 不能修改链接线，而是标记删除
@@ -73,24 +63,26 @@ public class DeleteUserTaskCmd implements Command<Void>, Serializable {
             try{
                 ProcessDefinitionUtil.updateProcess(processInstanceId,bpmnModel);
             } catch (Exception e) {
-                throw new FlowableIllegalArgumentException("节点删除异常："+e.getMessage());
+                throw new FlowableIllegalArgumentException("节点删除异常："+e.getCause().toString());
             }
 
             //如果是删除进行中的节点，则要处理excution ，删除进行中的任务需要删除掉
             //处理当前的excution.task
             // 当前流程审批人编辑判断
-            if (StringUtils.isEmpty(taskId)) {
-                return null;
+            // 如果是当前正在执行的节点编辑，则需要往下走编辑人员的接口
+            List<TaskEntity> taskEntities = CommandContextUtil.getTaskService(commandContext).findTasksByProcessInstanceId(processInstanceId);
+            TaskEntity currentTaskEntity = null;
+            for (TaskEntity taskEntity:taskEntities) {
+                // 删除了，重新生成审批人
+                if (taskKey.equals(taskEntity.getTaskDefinitionKey())) {
+                    currentTaskEntity = taskEntity;
+                    break;
+                }
             }
-
-            TaskEntity task = CommandContextUtil.getTaskService(commandContext).getTask(taskId);
-            if (task==null) {
-                throw new FlowableIllegalArgumentException("节点删除异常：当前任务ID对应的任务id不存在："+taskId);
-            }
-            if (taskDefKey.equals(task.getTaskDefinitionKey())) {
+            if (currentTaskEntity!=null) {
                 // 如果删除的是当前节点，就要处理，当前的任务
-                if (task.getExecutionId()!=null) {
-                    ExecutionEntity executionEntity = CommandContextUtil.getExecutionEntityManager(commandContext).findById(task.getExecutionId());
+                if (currentTaskEntity.getExecutionId()!=null) {
+                    ExecutionEntity executionEntity = CommandContextUtil.getExecutionEntityManager(commandContext).findById(currentTaskEntity.getExecutionId());
                     if (flowElement instanceof FlowNode) {
                         ActivityBehavior activityBehavior = (ActivityBehavior) ((UserTask) flowElement).getBehavior();
                         FlowNodeActivityBehavior flowNodeActivityBehavior = (FlowNodeActivityBehavior) activityBehavior;
@@ -100,7 +92,7 @@ public class DeleteUserTaskCmd implements Command<Void>, Serializable {
                 }
             }
         } else {
-            throw new FlowableIllegalArgumentException("该节点不能删除：");
+            throw new FlowableIllegalArgumentException("该节点不能删除："+taskKey);
         }
         return null;
     }

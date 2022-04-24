@@ -70,7 +70,7 @@ public class RecorderExecutionListener implements ExecutionListener {
     public void notify(DelegateExecution execution) {
         ExecutionEntity executionCasted = ((ExecutionEntity) execution);
 
-        org.flowable.bpmn.model.Process process = ProcessDefinitionUtil.getProcess(execution.getProcessDefinitionId());
+        org.flowable.bpmn.model.Process process = ProcessDefinitionUtil.getProcess(execution.getProcessInstanceId(),execution.getProcessDefinitionId());
         String activityId = execution.getCurrentActivityId();
         FlowElement currentFlowElement = process.getFlowElement(activityId, true);
 

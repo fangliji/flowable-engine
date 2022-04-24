@@ -83,9 +83,9 @@ public class ProcessInstanceMigrationCmd implements Command<Void> {
         if (processInstanceId != null) {
             migrationManager.migrateProcessInstance(processInstanceId, processInstanceMigrationDocument, commandContext);
         } else if (processDefinitionId != null) {
-            migrationManager.migrateProcessInstancesOfProcessDefinition(processDefinitionId, processInstanceMigrationDocument, commandContext);
+            migrationManager.migrateProcessInstancesOfProcessDefinition(processInstanceId,processDefinitionId, processInstanceMigrationDocument, commandContext);
         } else if (processDefinitionKey != null && processDefinitionVersion >= 0) {
-            migrationManager.migrateProcessInstancesOfProcessDefinition(processDefinitionKey, processDefinitionVersion, processDefinitionTenantId, processInstanceMigrationDocument, commandContext);
+            migrationManager.migrateProcessInstancesOfProcessDefinition(processInstanceId,processDefinitionKey, processDefinitionVersion, processDefinitionTenantId, processInstanceMigrationDocument, commandContext);
         } else {
             throw new FlowableException("Cannot migrate process(es), not enough information");
         }

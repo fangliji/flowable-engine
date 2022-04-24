@@ -91,11 +91,11 @@ public class ProcessInstanceMigrationValidationCmd implements Command<ProcessIns
         }
 
         if (processDefinitionId != null) {
-            return migrationManager.validateMigrateProcessInstancesOfProcessDefinition(processDefinitionId, processInstanceMigrationDocument, commandContext);
+            return migrationManager.validateMigrateProcessInstancesOfProcessDefinition(processInstanceId,processDefinitionId, processInstanceMigrationDocument, commandContext);
         }
 
         if (processDefinitionKey != null && processDefinitionVersion >= 0) {
-            return migrationManager.validateMigrateProcessInstancesOfProcessDefinition(processDefinitionKey, processDefinitionVersion, processDefinitionTenantId, processInstanceMigrationDocument, commandContext);
+            return migrationManager.validateMigrateProcessInstancesOfProcessDefinition(processInstanceId,processDefinitionKey, processDefinitionVersion, processDefinitionTenantId, processInstanceMigrationDocument, commandContext);
         }
 
         throw new FlowableException("Cannot validate process migration, not enough information");

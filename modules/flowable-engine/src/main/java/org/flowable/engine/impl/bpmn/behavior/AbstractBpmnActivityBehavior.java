@@ -58,7 +58,7 @@ public class AbstractBpmnActivityBehavior extends FlowNodeActivityBehavior {
     @Override
     public void leave(DelegateExecution execution) {
         FlowElement currentFlowElement = execution.getCurrentFlowElement();
-        Collection<BoundaryEvent> boundaryEvents = findBoundaryEventsForFlowNode(execution.getProcessDefinitionId(), currentFlowElement);
+        Collection<BoundaryEvent> boundaryEvents = findBoundaryEventsForFlowNode(execution.getProcessInstanceId(),execution.getProcessDefinitionId(), currentFlowElement);
         if (CollectionUtil.isNotEmpty(boundaryEvents)) {
             executeCompensateBoundaryEvents(boundaryEvents, execution);
         }
@@ -130,8 +130,8 @@ public class AbstractBpmnActivityBehavior extends FlowNodeActivityBehavior {
 
     }
 
-    protected Collection<BoundaryEvent> findBoundaryEventsForFlowNode(final String processDefinitionId, final FlowElement flowElement) {
-        Process process = getProcessDefinition(processDefinitionId);
+    protected Collection<BoundaryEvent> findBoundaryEventsForFlowNode(final String processInstanceId,final String processDefinitionId, final FlowElement flowElement) {
+        Process process = getProcessDefinition(processInstanceId,processDefinitionId);
 
         // This could be cached or could be done at parsing time
         List<BoundaryEvent> results = new ArrayList<>(1);
@@ -144,9 +144,9 @@ public class AbstractBpmnActivityBehavior extends FlowNodeActivityBehavior {
         return results;
     }
 
-    protected Process getProcessDefinition(String processDefinitionId) {
+    protected Process getProcessDefinition(String processInstanceId,String processDefinitionId) {
         // TODO: must be extracted / cache should be accessed in another way
-        return ProcessDefinitionUtil.getProcess(processDefinitionId);
+        return ProcessDefinitionUtil.getProcess(processInstanceId,processDefinitionId);
     }
 
     protected boolean hasLoopCharacteristics() {

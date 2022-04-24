@@ -49,7 +49,7 @@ public class BoundaryCompensateEventActivityBehavior extends BoundaryEventActivi
         ExecutionEntity executionEntity = (ExecutionEntity) execution;
         BoundaryEvent boundaryEvent = (BoundaryEvent) execution.getCurrentFlowElement();
 
-        Process process = ProcessDefinitionUtil.getProcess(execution.getProcessDefinitionId());
+        Process process = ProcessDefinitionUtil.getProcess(execution.getProcessInstanceId(),execution.getProcessDefinitionId());
         if (process == null) {
             throw new FlowableException("Process model (id = " + execution.getId() + ") could not be found");
         }

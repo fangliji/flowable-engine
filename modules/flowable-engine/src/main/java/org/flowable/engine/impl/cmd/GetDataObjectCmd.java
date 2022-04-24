@@ -98,7 +98,7 @@ public class GetDataObjectCmd implements Command<DataObject>, Serializable {
                 executionEntity = executionEntity.getParent();
             }
 
-            BpmnModel bpmnModel = ProcessDefinitionUtil.getBpmnModel(executionEntity.getProcessDefinitionId());
+            BpmnModel bpmnModel = ProcessDefinitionUtil.getBpmnModel(executionEntity.getProcessInstanceId(),executionEntity.getProcessDefinitionId(),false);
             ValuedDataObject foundDataObject = null;
             if (executionEntity.getParentId() == null) {
                 for (ValuedDataObject dataObjectDefinition : bpmnModel.getMainProcess().getDataObjects()) {

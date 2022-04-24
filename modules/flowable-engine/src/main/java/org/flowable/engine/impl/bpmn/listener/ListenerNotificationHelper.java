@@ -102,7 +102,7 @@ public class ListenerNotificationHelper {
 
     public void executeTaskListeners(TaskEntity taskEntity, String eventType) {
         if (taskEntity.getProcessDefinitionId() != null) {
-            org.flowable.bpmn.model.Process process = ProcessDefinitionUtil.getProcess(taskEntity.getProcessDefinitionId());
+            org.flowable.bpmn.model.Process process = ProcessDefinitionUtil.getProcess(taskEntity.getProcessInstanceId(),taskEntity.getProcessDefinitionId());
             FlowElement flowElement = process.getFlowElement(taskEntity.getTaskDefinitionKey(), true);
             if (flowElement instanceof UserTask) {
                 UserTask userTask = (UserTask) flowElement;

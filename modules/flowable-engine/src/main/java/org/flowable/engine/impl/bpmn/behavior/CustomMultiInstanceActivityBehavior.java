@@ -189,7 +189,7 @@ public abstract class CustomMultiInstanceActivityBehavior extends FlowNodeActivi
     protected void executeCompensationBoundaryEvents(FlowElement flowElement, DelegateExecution execution) {
 
         // Execute compensation boundary events
-        Collection<BoundaryEvent> boundaryEvents = findBoundaryEventsForFlowNode(execution.getProcessDefinitionId(), flowElement);
+        Collection<BoundaryEvent> boundaryEvents = findBoundaryEventsForFlowNode(execution.getProcessInstanceId(),execution.getProcessDefinitionId(), flowElement);
         if (CollectionUtil.isNotEmpty(boundaryEvents)) {
 
             // The parent execution becomes a scope, and a child execution is created for each of the boundary events
@@ -213,8 +213,8 @@ public abstract class CustomMultiInstanceActivityBehavior extends FlowNodeActivi
         }
     }
 
-    protected Collection<BoundaryEvent> findBoundaryEventsForFlowNode(final String processDefinitionId, final FlowElement flowElement) {
-        Process process = getProcessDefinition(processDefinitionId);
+    protected Collection<BoundaryEvent> findBoundaryEventsForFlowNode(final String processInstanceId,final String processDefinitionId, final FlowElement flowElement) {
+        Process process = getProcessDefinition(processInstanceId,processDefinitionId);
 
         // This could be cached or could be done at parsing time
         List<BoundaryEvent> results = new ArrayList<>(1);
@@ -227,8 +227,8 @@ public abstract class CustomMultiInstanceActivityBehavior extends FlowNodeActivi
         return results;
     }
 
-    protected Process getProcessDefinition(String processDefinitionId) {
-        return ProcessDefinitionUtil.getProcess(processDefinitionId);
+    protected Process getProcessDefinition(String processInstanceId,String processDefinitionId) {
+        return ProcessDefinitionUtil.getProcess(processInstanceId,processDefinitionId);
     }
 
     // Intercepts signals, and delegates it to the wrapped {@link ActivityBehavior}.

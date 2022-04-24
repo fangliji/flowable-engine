@@ -165,9 +165,9 @@ public class DeploymentEntityManagerImpl extends AbstractEntityManager<Deploymen
             // Try to find a previous version (it could be some versions are missing due to deletions)
             ProcessDefinition previousProcessDefinition = findNewLatestProcessDefinitionAfterRemovalOf(processDefinition);
             if (previousProcessDefinition != null) {
-
-                BpmnModel bpmnModel = ProcessDefinitionUtil.getBpmnModel(previousProcessDefinition.getId());
-                org.flowable.bpmn.model.Process previousProcess = ProcessDefinitionUtil.getProcess(previousProcessDefinition.getId());
+                // 上传用于删除流程定义数据的，和流程实例无关
+                BpmnModel bpmnModel = ProcessDefinitionUtil.getBpmnModel(null,previousProcessDefinition.getId(),false);
+                org.flowable.bpmn.model.Process previousProcess = ProcessDefinitionUtil.getProcess(null,previousProcessDefinition.getId());
                 if (CollectionUtil.isNotEmpty(previousProcess.getFlowElements())) {
 
                     List<StartEvent> startEvents = previousProcess.findFlowElementsOfType(StartEvent.class);

@@ -51,7 +51,7 @@ public class DeleteMultiInstanceExecutionCmd implements Command<Void>, Serializa
         ExecutionEntityManager executionEntityManager = CommandContextUtil.getExecutionEntityManager();
         ExecutionEntity execution = executionEntityManager.findById(executionId);
         
-        BpmnModel bpmnModel = ProcessDefinitionUtil.getBpmnModel(execution.getProcessDefinitionId());
+        BpmnModel bpmnModel = ProcessDefinitionUtil.getBpmnModel(execution.getProcessInstanceId(),execution.getProcessDefinitionId(),false);
         Activity miActivityElement = (Activity) bpmnModel.getFlowElement(execution.getActivityId());
         MultiInstanceLoopCharacteristics multiInstanceLoopCharacteristics = miActivityElement.getLoopCharacteristics();
         

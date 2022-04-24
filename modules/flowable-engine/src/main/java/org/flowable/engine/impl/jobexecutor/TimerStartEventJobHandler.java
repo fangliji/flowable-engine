@@ -56,7 +56,7 @@ public class TimerStartEventJobHandler extends TimerEventHandler implements JobH
                 }
 
                 // Find initial flow element matching the signal start event
-                org.flowable.bpmn.model.Process process = ProcessDefinitionUtil.getProcess(job.getProcessDefinitionId());
+                org.flowable.bpmn.model.Process process = ProcessDefinitionUtil.getProcess(job.getProcessInstanceId(),job.getProcessDefinitionId());
                 String activityId = TimerEventHandler.getActivityIdFromConfiguration(configuration);
                 if (activityId != null) {
                     FlowElement flowElement = process.getFlowElement(activityId, true);

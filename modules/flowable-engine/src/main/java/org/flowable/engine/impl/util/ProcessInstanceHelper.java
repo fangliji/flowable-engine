@@ -85,7 +85,8 @@ public class ProcessInstanceHelper {
         }
 
         // Get model from cache
-        Process process = ProcessDefinitionUtil.getProcess(processDefinition.getId());
+        // 创建流程实例
+        Process process = ProcessDefinitionUtil.getProcess(null,processDefinition.getId());
         if (process == null) {
             throw new FlowableException("Cannot start process instance. Process model " + processDefinition.getName() + " (id = " + processDefinition.getId() + ") could not be found");
         }
@@ -115,7 +116,8 @@ public class ProcessInstanceHelper {
         }
 
         // Get model from cache
-        Process process = ProcessDefinitionUtil.getProcess(processDefinition.getId());
+        // 创建流程实例
+        Process process = ProcessDefinitionUtil.getProcess(null,processDefinition.getId());
         if (process == null) {
             throw new FlowableException("Cannot start process instance. Process model " + processDefinition.getName() + " (id = " + processDefinition.getId() + ") could not be found");
         }
@@ -229,8 +231,8 @@ public class ProcessInstanceHelper {
     }
 
     public void startProcessInstance(ExecutionEntity processInstance, CommandContext commandContext, Map<String, Object> variables) {
-
-        Process process = ProcessDefinitionUtil.getProcess(processInstance.getProcessDefinitionId());
+        // 刚创建流程，不需要
+        Process process = ProcessDefinitionUtil.getProcess(null,processInstance.getProcessDefinitionId());
         
         processAvailableEventSubProcesses(processInstance, process, commandContext);
 
@@ -270,7 +272,7 @@ public class ProcessInstanceHelper {
             EventDefinition eventDefinition = startEvent.getEventDefinitions().get(0);
             if (eventDefinition instanceof MessageEventDefinition) {
                 MessageEventDefinition messageEventDefinition = (MessageEventDefinition) eventDefinition;
-                BpmnModel bpmnModel = ProcessDefinitionUtil.getBpmnModel(parentExecution.getProcessDefinitionId());
+                BpmnModel bpmnModel = ProcessDefinitionUtil.getBpmnModel(parentExecution.getProcessInstanceId(),parentExecution.getProcessDefinitionId(),false);
                 if (bpmnModel.containsMessageId(messageEventDefinition.getMessageRef())) {
                     messageEventDefinition.setMessageRef(bpmnModel.getMessage(messageEventDefinition.getMessageRef()).getName());
                 }
@@ -284,7 +286,7 @@ public class ProcessInstanceHelper {
 
             } else if (eventDefinition instanceof SignalEventDefinition) {
                 SignalEventDefinition signalEventDefinition = (SignalEventDefinition) eventDefinition;
-                BpmnModel bpmnModel = ProcessDefinitionUtil.getBpmnModel(parentExecution.getProcessDefinitionId());
+                BpmnModel bpmnModel = ProcessDefinitionUtil.getBpmnModel(parentExecution.getProcessInstanceId(),parentExecution.getProcessDefinitionId(),false);
                 Signal signal = null;
                 if (bpmnModel.containsSignalId(signalEventDefinition.getSignalRef())) {
                     signal = bpmnModel.getSignal(signalEventDefinition.getSignalRef());

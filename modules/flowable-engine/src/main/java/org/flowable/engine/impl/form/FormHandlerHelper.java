@@ -32,7 +32,8 @@ public class FormHandlerHelper {
 
     public StartFormHandler getStartFormHandler(CommandContext commandContext, ProcessDefinition processDefinition) {
         StartFormHandler startFormHandler = new DefaultStartFormHandler();
-        org.flowable.bpmn.model.Process process = ProcessDefinitionUtil.getProcess(processDefinition.getId());
+        // 用于开始流程的，所以阔以忽略
+        org.flowable.bpmn.model.Process process = ProcessDefinitionUtil.getProcess(null,processDefinition.getId());
 
         FlowElement initialFlowElement = process.getInitialFlowElement();
         if (initialFlowElement instanceof StartEvent) {
@@ -52,7 +53,8 @@ public class FormHandlerHelper {
     }
 
     public TaskFormHandler getTaskFormHandlder(String processDefinitionId, String taskId) {
-        org.flowable.bpmn.model.Process process = ProcessDefinitionUtil.getProcess(processDefinitionId);
+        //暂时不用管，上传不涉及流程实例
+        org.flowable.bpmn.model.Process process = ProcessDefinitionUtil.getProcess(null,processDefinitionId);
         FlowElement flowElement = process.getFlowElement(taskId, true);
         if (flowElement instanceof UserTask) {
             UserTask userTask = (UserTask) flowElement;
