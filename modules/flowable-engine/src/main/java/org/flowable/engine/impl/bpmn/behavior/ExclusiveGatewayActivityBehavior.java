@@ -64,11 +64,7 @@ public class ExclusiveGatewayActivityBehavior extends GatewayActivityBehavior {
         SequenceFlow outgoingSequenceFlow = null;
         SequenceFlow defaultSequenceFlow = null;
         String defaultSequenceFlowId = exclusiveGateway.getDefaultFlow();
-        // 第一步先判断链接线上面是否有优先级，如果没有优先级，则不说了，如果有优先级，按优先级排序
-        boolean flag = true;
-        // 直接找出有优先级且优先级是最高的
-        SequenceFlow highestPriority = null;
-        String initPriority = null;
+
         // Determine sequence flow to take
         Iterator<SequenceFlow> sequenceFlowIterator = exclusiveGateway.getOutgoingFlows().iterator();
         while (outgoingSequenceFlow == null && sequenceFlowIterator.hasNext()) {
@@ -81,20 +77,7 @@ public class ExclusiveGatewayActivityBehavior extends GatewayActivityBehavior {
                     if (LOGGER.isDebugEnabled()) {
                         LOGGER.debug("Sequence flow '{}' selected as outgoing sequence flow.", sequenceFlow.getId());
                     }
-                    // 获取条件优先级
-                    String priority = sequenceFlow.getConditionPriority();
-                    if (priority==null || "".equals(priority)) {
-                        outgoingSequenceFlow = sequenceFlow;
-                        flag = false;
-                        break;
-                    }
-                    if (initPriority ==null) {
-                        initPriority = priority;
-                    }
-                    if (initPriority.compareTo(priority)>=0) {
-                        initPriority = priority;
-                        highestPriority = sequenceFlow;
-                    }
+                    outgoingSequenceFlow = sequenceFlow;
                 }
             } else if (SkipExpressionUtil.shouldSkipFlowElement(Context.getCommandContext(), execution, skipExpressionString)) {
                 outgoingSequenceFlow = sequenceFlow;
@@ -106,10 +89,7 @@ public class ExclusiveGatewayActivityBehavior extends GatewayActivityBehavior {
             }
 
         }
-        if (flag &&  highestPriority!=null ) {
-            // 标记为true，说明有优先级，
-            outgoingSequenceFlow = highestPriority;
-        }
+
         // Leave the gateway
         if (outgoingSequenceFlow != null) {
             execution.setCurrentFlowElement(outgoingSequenceFlow);

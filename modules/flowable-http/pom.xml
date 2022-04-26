@@ -10,7 +10,7 @@
         <groupId>org.flowable</groupId>
         <artifactId>flowable-root</artifactId>
         <relativePath>../..</relativePath>
-        <version>6.4.1</version>
+        <version>0.6.4.1-SNAPSHOT</version>
     </parent>
 
     <properties>
@@ -233,5 +233,16 @@
             </plugin>
         </plugins>
     </reporting>
-
+    <distributionManagement>
+        <snapshotRepository>
+            <id>mvn-datacenter</id>
+            <name>nexus maven</name>
+            <url>http://nexus.17usoft.com/repository/mvn-component-snapshot/</url>
+        </snapshotRepository>
+        <repository>
+            <id>mvn-datacenter</id>
+            <name>nexus maven</name>
+            <url>http://nexus.17usoft.com/repository/mvn-component-snapshot/</url>
+        </repository>
+    </distributionManagement>
 </project>

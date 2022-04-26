@@ -14,7 +14,7 @@
 	</parent>
 
 	<packaging>pom</packaging>
-	<version>6.4.1</version>
+	<version>0.6.4.1-SNAPSHOT</version>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<jdk.version>1.8</jdk.version>
@@ -1015,6 +1015,7 @@
 		<module>modules/flowable-app-engine-api</module>
 		<module>modules/flowable-app-engine</module>
 		<module>modules/flowable-spring-security</module>
+		<module>modules/flowable-spring-boot</module>
 	</modules>
 
 	<build>
@@ -1733,4 +1734,16 @@
 		<connection>scm:git:git@github.com:flowable/flowable-engine.git</connection>
 		<developerConnection>scm:git:git@github.com:flowable/flowable-engine.git</developerConnection>
 	</scm>
+	<distributionManagement>
+		<snapshotRepository>
+			<id>mvn-datacenter</id>
+			<name>nexus maven</name>
+			<url>http://nexus.17usoft.com/repository/mvn-component-snapshot/</url>
+		</snapshotRepository>
+		<repository>
+			<id>mvn-datacenter</id>
+			<name>nexus maven</name>
+			<url>http://nexus.17usoft.com/repository/mvn-component-snapshot/</url>
+		</repository>
+	</distributionManagement>
 </project>

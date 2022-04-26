@@ -123,7 +123,6 @@ public class SequenceFlowJsonConverter extends BaseBpmnJsonConverter {
         }
 
         setPropertyValue(PROPERTY_SKIP_EXPRESSION, sequenceFlow.getSkipExpression(), propertiesNode);
-        setPropertyValue(PROPERTY_CONDITION_PRIORITY, sequenceFlow.getConditionPriority(), propertiesNode);
 
         if (sequenceFlow.getExecutionListeners().size() > 0) {
             BpmnJsonConverterUtil.convertListenersToJson(sequenceFlow.getExecutionListeners(), true, propertiesNode);
@@ -184,8 +183,6 @@ public class SequenceFlowJsonConverter extends BaseBpmnJsonConverter {
         }
 
         flow.setSkipExpression(getPropertyValueAsString(PROPERTY_SKIP_EXPRESSION, elementNode));
-        flow.setConditionPriority(getPropertyValueAsString(PROPERTY_CONDITION_PRIORITY, elementNode));
-
         return flow;
     }
 

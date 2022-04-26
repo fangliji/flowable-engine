@@ -27,7 +27,6 @@ public abstract class BaseElement implements HasExtensionAttributes {
     protected String id;
     protected int xmlRowNumber;
     protected int xmlColumnNumber;
-
     protected Map<String, List<ExtensionElement>> extensionElements = new LinkedHashMap<>();
     /** extension attributes could be part of each element */
     protected Map<String, List<ExtensionAttribute>> attributes = new LinkedHashMap<>();

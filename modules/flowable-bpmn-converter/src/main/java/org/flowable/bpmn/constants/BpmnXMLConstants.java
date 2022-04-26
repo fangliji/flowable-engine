@@ -243,7 +243,6 @@ public interface BpmnXMLConstants {
     public static final String ATTRIBUTE_FLOW_SOURCE_REF = "sourceRef";
     public static final String ATTRIBUTE_FLOW_TARGET_REF = "targetRef";
     public static final String ATTRIBUTE_FLOW_SKIP_EXPRESSION = "skipExpression";
-    public static final String ATTRIBUTE_FLOW_CONDITION_PRIORITY = "condition_priority";
 
     public static final String ELEMENT_TEXT_ANNOTATION = "textAnnotation";
     public static final String ATTRIBUTE_TEXTFORMAT = "textFormat";
