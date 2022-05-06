@@ -142,4 +142,35 @@ public abstract class BaseElement implements HasExtensionAttributes {
 
     @Override
     public abstract BaseElement clone();
+
+    public  void copyOther(BaseElement otherElement) {
+        extensionElements = new LinkedHashMap<>();
+        if (otherElement.getExtensionElements() != null && !otherElement.getExtensionElements().isEmpty()) {
+            for (String key : otherElement.getExtensionElements().keySet()) {
+                List<ExtensionElement> otherElementList = otherElement.getExtensionElements().get(key);
+                if (otherElementList != null && !otherElementList.isEmpty()) {
+                    List<ExtensionElement> elementList = new ArrayList<>();
+                    for (ExtensionElement extensionElement : otherElementList) {
+                        elementList.add(extensionElement.clone());
+                    }
+                    extensionElements.put(key, elementList);
+                }
+            }
+        }
+
+        attributes = new LinkedHashMap<>();
+        if (otherElement.getAttributes() != null && !otherElement.getAttributes().isEmpty()) {
+            for (String key : otherElement.getAttributes().keySet()) {
+                List<ExtensionAttribute> otherAttributeList = otherElement.getAttributes().get(key);
+                if (otherAttributeList != null && !otherAttributeList.isEmpty()) {
+                    List<ExtensionAttribute> attributeList = new ArrayList<>();
+                    for (ExtensionAttribute extensionAttribute : otherAttributeList) {
+                        attributeList.add(extensionAttribute.clone());
+                    }
+                    attributes.put(key, attributeList);
+                }
+            }
+        }
+    };
+
 }

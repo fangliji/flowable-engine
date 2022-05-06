@@ -62,7 +62,7 @@ public class AddUserTaskCmd implements Command<Void> {
         dealJumpToTargetElement(commandContext, flowElement, userTask);
         return null;
     }
-
+    // outgoing 要移除原来老的线条，TODO::
     private void addUserTask (Process process,FlowNode oldNode,UserTask addUserTask ,List<SequenceFlow> sequenceFlows ,FlowNode targetFlowNode) {
         sequenceFlows.forEach(sequence -> {
             sequence.setTargetFlowElement(addUserTask);
@@ -109,6 +109,7 @@ public class AddUserTaskCmd implements Command<Void> {
             sequenceFlow.setTargetFlowElement(targetNode);
             sequenceFlow.setTargetRef(targetNode.getId());
             sequenceFlows.add(sequenceFlow);
+            //移除老的线条 TODO::
             addIncomingFlows(targetNode, Arrays.asList(sequenceFlow));
         }
         addOutgoingFlows(sourceNode, sequenceFlows);

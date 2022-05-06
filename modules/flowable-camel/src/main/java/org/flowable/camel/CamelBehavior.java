@@ -214,7 +214,7 @@ public abstract class CamelBehavior extends AbstractBpmnActivityBehavior impleme
     }
 
     protected String getProcessDefinitionKey(DelegateExecution execution) {
-        Process process = ProcessDefinitionUtil.getProcess(execution.getProcessDefinitionId());
+        Process process = ProcessDefinitionUtil.getProcess(execution.getProcessInstanceId(),execution.getProcessDefinitionId());
         return process.getId();
     }
 

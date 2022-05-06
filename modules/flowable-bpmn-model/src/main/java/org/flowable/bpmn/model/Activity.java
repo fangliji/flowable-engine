@@ -151,4 +151,41 @@ public abstract class Activity extends FlowNode {
         boundaryEvents.clear();
         boundaryEvents.addAll(otherActivity.getBoundaryEvents());
     }
+
+    public  void copyOther(BaseElement other) {
+        super.copyOther(other);
+        if (other instanceof Activity) {
+            Activity otherActivity = (Activity)other;
+            setFailedJobRetryTimeCycleValue(otherActivity.getFailedJobRetryTimeCycleValue());
+            setDefaultFlow(otherActivity.getDefaultFlow());
+            setForCompensation(otherActivity.isForCompensation());
+            if (otherActivity.getLoopCharacteristics() != null) {
+                setLoopCharacteristics(otherActivity.getLoopCharacteristics().clone());
+            }
+            if (otherActivity.getCustomLoopCharacteristics()!=null) {
+                setCustomLoopCharacteristics(otherActivity.getCustomLoopCharacteristics().clone());
+            }
+            if (otherActivity.getIoSpecification() != null) {
+                setIoSpecification(otherActivity.getIoSpecification().clone());
+            }
+
+            dataInputAssociations = new ArrayList<>();
+            if (otherActivity.getDataInputAssociations() != null && !otherActivity.getDataInputAssociations().isEmpty()) {
+                for (DataAssociation association : otherActivity.getDataInputAssociations()) {
+                    dataInputAssociations.add(association.clone());
+                }
+            }
+
+            dataOutputAssociations = new ArrayList<>();
+            if (otherActivity.getDataOutputAssociations() != null && !otherActivity.getDataOutputAssociations().isEmpty()) {
+                for (DataAssociation association : otherActivity.getDataOutputAssociations()) {
+                    dataOutputAssociations.add(association.clone());
+                }
+            }
+
+            boundaryEvents.clear();
+            boundaryEvents.addAll(otherActivity.getBoundaryEvents());
+        }
+
+    }
 }

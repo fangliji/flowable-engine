@@ -235,4 +235,42 @@ public class UserTask extends Task {
             }
         }
     }
+
+
+
+    public  void copyOther(BaseElement other) {
+        super.copyOther(other);
+        if (other instanceof UserTask) {
+            UserTask otherElement = (UserTask) other;
+            setAssignee(otherElement.getAssignee());
+            setOwner(otherElement.getOwner());
+            setFormKey(otherElement.getFormKey());
+            setDueDate(otherElement.getDueDate());
+            setPriority(otherElement.getPriority());
+            setCategory(otherElement.getCategory());
+            setExtensionId(otherElement.getExtensionId());
+            setSkipExpression(otherElement.getSkipExpression());
+
+            setCandidateGroups(new ArrayList<>(otherElement.getCandidateGroups()));
+            setCandidateUsers(new ArrayList<>(otherElement.getCandidateUsers()));
+
+            setCustomGroupIdentityLinks(otherElement.customGroupIdentityLinks);
+            setCustomUserIdentityLinks(otherElement.customUserIdentityLinks);
+
+            formProperties = new ArrayList<>();
+            if (otherElement.getFormProperties() != null && !otherElement.getFormProperties().isEmpty()) {
+                for (FormProperty property : otherElement.getFormProperties()) {
+                    formProperties.add(property.clone());
+                }
+            }
+
+            taskListeners = new ArrayList<>();
+            if (otherElement.getTaskListeners() != null && !otherElement.getTaskListeners().isEmpty()) {
+                for (FlowableListener listener : otherElement.getTaskListeners()) {
+                    taskListeners.add(listener.clone());
+                }
+            }
+        }
+
+    };
 }
