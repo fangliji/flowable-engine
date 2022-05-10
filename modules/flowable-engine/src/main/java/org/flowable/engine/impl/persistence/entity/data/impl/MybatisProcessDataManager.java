@@ -35,6 +35,18 @@ public class MybatisProcessDataManager extends AbstractProcessDataManager<Proces
     public ProcessEntity getProcessByInstanceId(String processInstanceId) {
 
         return (ProcessEntity) getDbSqlSession().selectOne("selectProcessByInstanceId", processInstanceId);
-    };
+    }
+
+    @Override
+    public int createImmediately(ProcessEntity entity) {
+        return getDbSqlSession().getSqlSession().insert("insertProcess",entity);
+    }
+
+    @Override
+    public int updateImmediately(ProcessEntity entity) {
+        return getDbSqlSession().update("updateProcess", entity);
+    }
+
+
 
 }

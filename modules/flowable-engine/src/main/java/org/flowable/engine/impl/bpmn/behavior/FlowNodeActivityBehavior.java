@@ -79,4 +79,9 @@ public abstract class FlowNodeActivityBehavior implements TriggerableActivityBeh
         throw new FlowableException("this activity can't updateFlowTask");
     }
 
+
+    public boolean customSkipUserTask(DelegateExecution execution, FlowElement flowElement) {
+        // concrete activity behaviours that do accept signals should override this method;
+        return false;
+    }
 }

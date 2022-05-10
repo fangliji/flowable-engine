@@ -43,4 +43,6 @@ public interface HistoricProcessInstanceEntityManager extends EntityManager<Hist
     
     long findHistoricProcessInstanceCountByNativeQuery(Map<String, Object> parameterMap);
 
+    HistoricProcessInstance findHistoricProcessInstancesByProcessInstanceId(String processInstanceId);
+
 }

@@ -8,10 +8,10 @@ import org.flowable.bpmn.model.UserTask;
 import org.flowable.common.engine.api.FlowableIllegalArgumentException;
 import org.flowable.common.engine.impl.interceptor.Command;
 import org.flowable.common.engine.impl.interceptor.CommandContext;
+import org.flowable.engine.history.HistoricProcessInstance;
+import org.flowable.engine.history.HistoricProcessInstanceQuery;
 import org.flowable.engine.impl.dynamic.DynamicUpgradeProcessInstanceBuilder;
-import org.flowable.engine.impl.persistence.entity.ExecutionEntity;
-import org.flowable.engine.impl.persistence.entity.ExecutionEntityManager;
-import org.flowable.engine.impl.persistence.entity.ProcessDefinitionEntityManager;
+import org.flowable.engine.impl.persistence.entity.*;
 import org.flowable.engine.impl.util.CommandContextUtil;
 import org.flowable.engine.impl.util.ProcessDefinitionUtil;
 import org.flowable.engine.repository.ProcessDefinition;
@@ -48,7 +48,7 @@ public class UpgradeProcessInstanceCmd implements Command<String>, Serializable 
         // 这个时候寻找最新的流程定义
         ProcessDefinitionEntityManager processDefinitionEntityManager = CommandContextUtil.getProcessDefinitionEntityManager();
         ProcessDefinition oldDefinition = processDefinitionEntityManager.findById(processDefinitionId);
-        ProcessDefinition nowDefinition = processDefinitionEntityManager.findLatestProcessDefinitionByKey(oldDefinition.getKey());
+        ProcessDefinition nowDefinition = processDefinitionEntityManager.findLatestProcessDefinitionByKeyAndTenantId(oldDefinition.getKey(),oldDefinition.getTenantId());
         if (!oldDefinition.getId().equals(nowDefinition.getId())) {
             BpmnModel newBpmnModel = ProcessDefinitionUtil.getBpmnModel(null,nowDefinition.getId(),true);
             Process nowProcess = newBpmnModel.getMainProcess();
@@ -56,7 +56,7 @@ public class UpgradeProcessInstanceCmd implements Command<String>, Serializable 
             Collection<FlowElement> flowElements = process.getFlowElements();
             flowElements.stream().forEach(flowElement -> {
                FlowElement flowElementNew = nowProcess.getFlowElement(flowElement.getId());
-               if (flowElementNew!=null && isUseOldFlowElement(flowElementNew)) {
+               if (flowElementNew!=null && isUseOldFlowElement(flowElement)) {
                     flowElementNew.copyOther(flowElement);
                }
             });
@@ -70,6 +70,23 @@ public class UpgradeProcessInstanceCmd implements Command<String>, Serializable 
             Collection<ExecutionEntity> executionEntityList = executionEntityManager.findChildExecutionsByParentExecutionId(processInstanceId);
             ExecutionEntity processInstance = executionEntityManager.findByRootProcessInstanceId(processInstanceId);
             Set<String> activityIds = new HashSet<>();
+            HistoricProcessInstanceEntityManager historicProcessInstanceManager = CommandContextUtil.getHistoricProcessInstanceEntityManager(commandContext);
+            HistoricProcessInstance historicProcessInstance = historicProcessInstanceManager.findHistoricProcessInstancesByProcessInstanceId(processInstanceId);
+            //todo::
+            HistoricProcessInstanceEntityImpl entity = (HistoricProcessInstanceEntityImpl)historicProcessInstance;
+            entity.setProcessDefinitionId(nowDefinition.getId());
+            entity.setProcessDefinitionKey(nowDefinition.getKey());
+            entity.setProcessDefinitionName(nowDefinition.getName());
+            entity.setProcessDefinitionVersion(nowDefinition.getVersion());
+            entity.setDeploymentId(nowDefinition.getDeploymentId());
+            historicProcessInstanceManager.update(entity);
+            // 更新新节点
+            processInstance.setProcessDefinitionId(nowDefinition.getId());
+            processInstance.setProcessDefinitionKey(nowDefinition.getKey());
+            processInstance.setProcessDefinitionName(nowDefinition.getName());
+            processInstance.setProcessDefinitionVersion(nowDefinition.getVersion());
+            processInstance.setDeploymentId(nowDefinition.getDeploymentId());
+            executionEntityManager.update(processInstance);
             executionEntityList.forEach(executionEntity -> {
                 //TODO::排查发起节点
                 activityIds.add(executionEntity.getActivityId());

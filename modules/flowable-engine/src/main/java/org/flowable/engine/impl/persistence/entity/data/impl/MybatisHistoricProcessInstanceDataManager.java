@@ -57,6 +57,13 @@ public class MybatisHistoricProcessInstanceDataManager extends AbstractProcessDa
 
     @Override
     @SuppressWarnings("unchecked")
+    public HistoricProcessInstance findHistoricProcessInstancesByProcessInstanceId(String processInstanceId) {
+        Object result = getDbSqlSession().selectOne("selectOneHistoricProcessInstance", processInstanceId);
+        return result==null?null:(HistoricProcessInstance) result;
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
     public List<HistoricProcessInstance> findHistoricProcessInstancesBySuperProcessInstanceId(String superProcessInstanceId) {
         return getDbSqlSession().selectList("selectHistoricProcessInstanceIdsBySuperProcessInstanceId", superProcessInstanceId);
     }

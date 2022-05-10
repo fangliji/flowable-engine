@@ -268,10 +268,10 @@ public class ProcessDefinitionUtil {
                 processEntity.setProcInstId(processInstanceId);
                 processEntity.setRevision(1);
                 processEntity.setBytes(bytes);
-                processDataManager.insert(processEntity);
+                processDataManager.createImmediately(processEntity);
             } else {
                 processEntity.setBytes(bytes);
-                processDataManager.update(processEntity);
+                processDataManager.updateImmediately(processEntity);
             }
         } finally {
           if (lock) {

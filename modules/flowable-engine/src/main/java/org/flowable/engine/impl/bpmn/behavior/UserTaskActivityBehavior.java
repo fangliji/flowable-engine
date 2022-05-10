@@ -222,6 +222,9 @@ public class UserTaskActivityBehavior extends TaskActivityBehavior {
             skipUserTask = SkipExpressionUtil.isSkipExpressionEnabled(execution, skipExpression)
                     && SkipExpressionUtil.shouldSkipFlowElement(execution, skipExpression);
         }
+        if (!skipUserTask) {
+            skipUserTask = customSkipUserTask((ExecutionEntity) execution,execution.getCurrentFlowElement());
+        }
         
         TaskHelper.insertTask(task, (ExecutionEntity) execution, !skipUserTask);
 
@@ -248,6 +251,7 @@ public class UserTaskActivityBehavior extends TaskActivityBehavior {
             leave(execution);
         }
     }
+
 
     @Override
     public void deleteFlowTask(DelegateExecution execution) {

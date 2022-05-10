@@ -42,4 +42,7 @@ public interface HistoricProcessInstanceDataManager extends DataManager<Historic
 
     long findHistoricProcessInstanceCountByNativeQuery(Map<String, Object> parameterMap);
 
+    HistoricProcessInstance findHistoricProcessInstancesByProcessInstanceId(String processInstanceId);
+
+
 }

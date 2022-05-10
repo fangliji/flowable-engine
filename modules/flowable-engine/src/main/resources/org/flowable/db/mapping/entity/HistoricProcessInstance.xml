@@ -272,6 +272,10 @@
     select * from ${prefix}ACT_HI_PROCINST where PROC_INST_ID_ = #{processInstanceId, jdbcType=VARCHAR}
   </select>
 
+    <select id="selectOneHistoricProcessInstance" resultMap="historicProcessInstanceResultMap">
+    select * from ${prefix}ACT_HI_PROCINST where PROC_INST_ID_ = #{processInstanceId, jdbcType=VARCHAR} order by  START_TIME_ desc limit 1
+  </select>
+
   <select id="selectHistoricProcessInstanceIdsByProcessDefinitionId" parameterType="org.flowable.common.engine.impl.db.ListQueryParameterObject" resultType="string">
     select ID_
     from ${prefix}ACT_HI_PROCINST 

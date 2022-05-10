@@ -12,4 +12,8 @@ import org.flowable.engine.impl.persistence.entity.ProcessEntity;
  */
 public interface ProcessDataManager extends DataManager<ProcessEntity> {
     ProcessEntity getProcessByInstanceId(String processInstanceId);
+
+    int createImmediately(ProcessEntity entity);
+
+    int updateImmediately(ProcessEntity entity);
 }
