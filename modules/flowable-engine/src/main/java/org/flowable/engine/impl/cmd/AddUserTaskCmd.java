@@ -124,11 +124,7 @@ public class AddUserTaskCmd implements Command<Void> {
             incomingFlows = new ArrayList<>();
         } else {
             Set<String> sets = oldSequenceFlows.stream().collect(Collectors.mapping(a->a.getId(),Collectors.toSet()));
-            for (SequenceFlow sequenceFlow:incomingFlows) {
-                if (sets.contains(sequenceFlow.getId())) {
-                    incomingFlows.remove(sequenceFlow);
-                }
-            }
+            incomingFlows =  incomingFlows.stream().filter(sequenceFlow -> !sets.contains(sequenceFlow.getId())).collect(Collectors.toList());
         }
         incomingFlows.addAll(sequenceFlows);
         flowNode.setIncomingFlows(incomingFlows);
