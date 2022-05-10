@@ -17,6 +17,8 @@ import org.flowable.task.service.impl.persistence.entity.TaskEntity;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * 类名称：AddUserTaskCmd
@@ -62,13 +64,15 @@ public class AddUserTaskCmd implements Command<Void> {
         dealJumpToTargetElement(commandContext, flowElement, userTask);
         return null;
     }
-    // outgoing 要移除原来老的线条，TODO::
+
     private void addUserTask (Process process,FlowNode oldNode,UserTask addUserTask ,List<SequenceFlow> sequenceFlows ,FlowNode targetFlowNode) {
+
         sequenceFlows.forEach(sequence -> {
             sequence.setTargetFlowElement(addUserTask);
             sequence.setTargetRef(addUserTask.getId());
         });
-        joinFlowNode(process, addUserTask, Arrays.asList(targetFlowNode));
+        addUserTask.setIncomingFlows(sequenceFlows);
+        joinFlowNode(process, addUserTask, Arrays.asList(targetFlowNode),sequenceFlows);
 
     }
 
@@ -98,7 +102,7 @@ public class AddUserTaskCmd implements Command<Void> {
         }
     }
 
-    private void joinFlowNode(org.flowable.bpmn.model.Process process, FlowNode sourceNode, List<FlowNode> targetNodeList) {
+    private void joinFlowNode(org.flowable.bpmn.model.Process process, FlowNode sourceNode, List<FlowNode> targetNodeList,List<SequenceFlow> oldSequenceFlows) {
 
         List<SequenceFlow> sequenceFlows = new ArrayList<>();
         for (FlowNode targetNode : targetNodeList) {
@@ -109,16 +113,18 @@ public class AddUserTaskCmd implements Command<Void> {
             sequenceFlow.setTargetFlowElement(targetNode);
             sequenceFlow.setTargetRef(targetNode.getId());
             sequenceFlows.add(sequenceFlow);
-            //移除老的线条 TODO::
-            addIncomingFlows(targetNode, Arrays.asList(sequenceFlow));
+            addIncomingFlows(targetNode, Arrays.asList(sequenceFlow), oldSequenceFlows);
         }
         addOutgoingFlows(sourceNode, sequenceFlows);
 
     }
-    private void addIncomingFlows(FlowNode flowNode, List<SequenceFlow> sequenceFlows) {
+    private void addIncomingFlows(FlowNode flowNode, List<SequenceFlow> sequenceFlows,List<SequenceFlow> oldSequenceFlows) {
         List<SequenceFlow> incomingFlows = flowNode.getIncomingFlows();
         if (incomingFlows == null) {
             incomingFlows = new ArrayList<>();
+        } else {
+            Set<String> sets = oldSequenceFlows.stream().collect(Collectors.mapping(a->a.getId(),Collectors.toSet()));
+            incomingFlows =  incomingFlows.stream().filter(sequenceFlow -> !sets.contains(sequenceFlow.getId())).collect(Collectors.toList());
         }
         incomingFlows.addAll(sequenceFlows);
         flowNode.setIncomingFlows(incomingFlows);
