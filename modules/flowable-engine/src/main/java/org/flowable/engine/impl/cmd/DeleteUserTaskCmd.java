@@ -51,7 +51,7 @@ public class DeleteUserTaskCmd implements Command<Void>, Serializable {
 
     @Override
     public Void execute(CommandContext commandContext) {
-        BpmnModel bpmnModel = ProcessDefinitionUtil.getBpmnModel(processInstanceId,processDefinitionId,true);
+        BpmnModel bpmnModel = ProcessDefinitionUtil.getBpmnModel(processInstanceId,processDefinitionId,true,false);
         Process process = bpmnModel.getMainProcess();
         FlowElement flowElement = process.getFlowElement(taskKey);
         if (flowElement instanceof UserTask) {

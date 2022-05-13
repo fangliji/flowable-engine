@@ -54,7 +54,7 @@ public class UpdateUserTaskCmd implements Command<Void>, Serializable {
 
     @Override
     public Void execute(CommandContext commandContext) {
-        BpmnModel bpmnModel = ProcessDefinitionUtil.getBpmnModel(processInstanceId,processDefinitionId,true);
+        BpmnModel bpmnModel = ProcessDefinitionUtil.getBpmnModel(processInstanceId,processDefinitionId,true,false);
         Process process = bpmnModel.getMainProcess();
         FlowElement flowElement = process.getFlowElement(dynamicUpdateUserTaskBuilder.getTaskKey());
         if (flowElement instanceof UserTask) {
@@ -92,7 +92,7 @@ public class UpdateUserTaskCmd implements Command<Void>, Serializable {
                 if (flowElement instanceof FlowNode) {
                     ActivityBehavior activityBehavior = (ActivityBehavior) ((UserTask) flowElement).getBehavior();
                     FlowNodeActivityBehavior flowNodeActivityBehavior = (FlowNodeActivityBehavior) activityBehavior;
-                    flowNodeActivityBehavior.updateFlowTask(executionEntity,userTask);
+                    flowNodeActivityBehavior.updateFlowTask(executionEntity,userTask,dynamicUpdateUserTaskBuilder.getFlag());
                 }
             }
             // 当前流程审批人编辑判断 TODO:如果编辑的是当前进行中的流程节点，需要生效处理

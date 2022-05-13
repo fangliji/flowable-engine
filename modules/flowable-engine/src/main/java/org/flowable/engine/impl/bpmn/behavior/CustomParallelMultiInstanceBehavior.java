@@ -48,9 +48,9 @@ public class CustomParallelMultiInstanceBehavior extends CustomMultiInstanceActi
     @Override
     protected int createInstances(DelegateExecution multiInstanceRootExecution) {
         int nrOfInstances = resolveNrOfInstances(multiInstanceRootExecution);
-        if (nrOfInstances<=0) {
+        if (nrOfInstances<0) {
             // 代表不走多实例，走普通userTask行为
-            return -1;
+            throw new FlowableIllegalArgumentException("Invalid number of CustomParallelMultiInstanceBehavior instances: must be non-negative integer value" + ", but was " + nrOfInstances);
         }
 
         setLoopVariable(multiInstanceRootExecution, NUMBER_OF_INSTANCES, nrOfInstances);

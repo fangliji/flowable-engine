@@ -39,7 +39,7 @@ public class AddUserTaskCmd implements Command<Void> {
 
     @Override
     public Void execute(CommandContext commandContext) {
-        BpmnModel bpmnModel = ProcessDefinitionUtil.getBpmnModel(processInstanceId,processDefinitionId,true);
+        BpmnModel bpmnModel = ProcessDefinitionUtil.getBpmnModel(processInstanceId,processDefinitionId,true,false);
         Process process = bpmnModel.getMainProcess();
         FlowElement flowElement = process.getFlowElement(dynamicAddUserTaskBuilder.getTaskKey());
         UserTask userTask = generateUserTask(dynamicAddUserTaskBuilder.nextTaskId(process.getFlowElementMap()), dynamicAddUserTaskBuilder.getName(), dynamicAddUserTaskBuilder.getCandidateUsers());

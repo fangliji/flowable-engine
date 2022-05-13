@@ -275,7 +275,7 @@ public class UserTaskActivityBehavior extends TaskActivityBehavior {
     }
 
     @Override
-    public void updateFlowTask(DelegateExecution execution,FlowElement flowElement) {
+    public void updateFlowTask(DelegateExecution execution,FlowElement flowElement,int addUserFlag) {
         List<TaskEntity> taskEntities = CommandContextUtil.getTaskService().findTasksByExecutionId(execution.getId()); // Should be only one
         TaskEntity currentTask = null;
         for (TaskEntity taskEntity : taskEntities) {

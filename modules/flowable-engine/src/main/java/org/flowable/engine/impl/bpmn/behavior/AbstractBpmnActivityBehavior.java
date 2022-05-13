@@ -64,7 +64,7 @@ public class AbstractBpmnActivityBehavior extends FlowNodeActivityBehavior {
         }
         // 新增会签逻辑，如果会签实例数小于1个以下，还是走普通行为的
         // 没有老的loop同事也不存在新的loop （或者新的loop）
-        if ((!hasLoopCharacteristics() && !hasCustomMultiInstanceCharacteristics()) || (hasCustomLoopCharacteristics() && !hasEnoughCadidateUser(execution))) {
+        if ((!hasLoopCharacteristics() && !hasCustomMultiInstanceCharacteristics())) {
             super.leave(execution);
         } else if (hasMultiInstanceCharacteristics()) {
             multiInstanceActivityBehavior.leave(execution);
@@ -179,9 +179,9 @@ public class AbstractBpmnActivityBehavior extends FlowNodeActivityBehavior {
     protected int getCandidateUsersNum(DelegateExecution execution) {
         List<String> users = getCacheCandidateUsers(execution);
         if (users!=null) {
-            return users.size()<=1?-1:users.size();
+            return users.size()<=0?0:users.size();
         }
-        return -1;
+        return 0;
     }
 
     protected List<String> extractCandidates(String str) {

@@ -74,7 +74,7 @@ public abstract class FlowNodeActivityBehavior implements TriggerableActivityBeh
         throw new FlowableException("this activity can't jump Task");
     }
 
-    public void updateFlowTask(DelegateExecution execution,FlowElement flowElement) {
+    public void updateFlowTask(DelegateExecution execution,FlowElement flowElement,int addUserFlag) {
         // concrete activity behaviours that do accept signals should override this method;
         throw new FlowableException("this activity can't updateFlowTask");
     }

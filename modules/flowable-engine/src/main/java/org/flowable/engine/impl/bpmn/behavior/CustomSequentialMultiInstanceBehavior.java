@@ -15,6 +15,7 @@ package org.flowable.engine.impl.bpmn.behavior;
 import org.flowable.bpmn.model.Activity;
 import org.flowable.bpmn.model.SubProcess;
 import org.flowable.common.engine.api.FlowableException;
+import org.flowable.common.engine.api.FlowableIllegalArgumentException;
 import org.flowable.engine.delegate.BpmnError;
 import org.flowable.engine.delegate.DelegateExecution;
 import org.flowable.engine.impl.delegate.ActivityBehavior;
@@ -43,9 +44,10 @@ public class CustomSequentialMultiInstanceBehavior extends CustomMultiInstanceAc
     protected int createInstances(DelegateExecution multiInstanceRootExecution) {
 
         int nrOfInstances = resolveNrOfInstances(multiInstanceRootExecution);
-        if (nrOfInstances<=0) {
-            // 代表不走多实例，走普通userTask行为
-            return -1;
+        if (nrOfInstances == 0) {
+            return nrOfInstances;
+        } else if (nrOfInstances < 0) {
+            throw new FlowableIllegalArgumentException("Invalid number of instances: must be a non-negative integer value" + ", but was " + nrOfInstances);
         }
 
         // Create child execution that will execute the inner behavior

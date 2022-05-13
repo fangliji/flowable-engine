@@ -43,7 +43,7 @@ public class UpgradeProcessInstanceCmd implements Command<String>, Serializable 
     public String execute(CommandContext commandContext) {
         String processDefinitionId = dynamicUpgradeProcessInstanceBuilder.getProcessDefinitionId();
         String processInstanceId = dynamicUpgradeProcessInstanceBuilder.getProcessInstanceId();
-        BpmnModel bpmnModel = ProcessDefinitionUtil.getBpmnModel(processInstanceId,processDefinitionId,true);
+        BpmnModel bpmnModel = ProcessDefinitionUtil.getBpmnModel(processInstanceId,processDefinitionId,true,false);
         Process process = bpmnModel.getMainProcess();
         // 这个时候寻找最新的流程定义
         ProcessDefinitionEntityManager processDefinitionEntityManager = CommandContextUtil.getProcessDefinitionEntityManager();

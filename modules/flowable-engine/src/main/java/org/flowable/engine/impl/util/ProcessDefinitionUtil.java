@@ -12,6 +12,7 @@
  */
 package org.flowable.engine.impl.util;
 
+import org.apache.commons.lang3.StringUtils;
 import org.flowable.bpmn.converter.BpmnXMLConverter;
 import org.flowable.bpmn.model.BpmnModel;
 import org.flowable.bpmn.model.Process;
@@ -99,7 +100,7 @@ public class ProcessDefinitionUtil {
            return deploymentManager.resolveProcessDefinition(processDefinitionEntity).getProcess();
        }
        try {
-            BpmnModel bpmnModel = getBpmnModelFromProcessEntity(processInstanceId);
+            BpmnModel bpmnModel = getBpmnModelFromProcessEntity(processInstanceId,true);
             if (bpmnModel!=null) {
                 return bpmnModel.getMainProcess();
            }
@@ -174,7 +175,7 @@ public class ProcessDefinitionUtil {
         };
     }
 
-    public static BpmnModel getBpmnModel(String processInstanceId,String processDefinitionId,boolean isFromDb) {
+    public static BpmnModel getBpmnModel(String processInstanceId,String processDefinitionId,boolean isFromDb,boolean isRead) {
 
         if (Context.getCommandContext() == null) {
             throw new FlowableException("Cannot get process model: no current command context is active");
@@ -189,7 +190,7 @@ public class ProcessDefinitionUtil {
             return deploymentManager.resolveProcessDefinition(processDefinitionEntity).getBpmnModel();
         }
         try {
-            BpmnModel bpmnModel = getBpmnModelFromProcessEntity(processInstanceId);
+            BpmnModel bpmnModel = getBpmnModelFromProcessEntity(processInstanceId,isRead);
             if (bpmnModel!=null) {
                 return bpmnModel;
             }
@@ -206,15 +207,61 @@ public class ProcessDefinitionUtil {
 
     }
 
-    public static BpmnModel getBpmnModelFromProcessEntity(String processInstanceId) throws Exception{
+    public static BpmnModel getBpmnModel(String processInstanceId,String processDefinitionId,boolean isFromDb) {
+
+        if (Context.getCommandContext() == null) {
+            throw new FlowableException("Cannot get process model: no current command context is active");
+
+        }  else if (processInstanceId ==null) {
+            DeploymentManager deploymentManager = CommandContextUtil.getProcessEngineConfiguration().getDeploymentManager();
+            if (isFromDb) {
+                return deploymentManager.getBpmnModelByIdFromDb(processDefinitionId);
+            }
+            // This will check the cache in the findDeployedProcessDefinitionById and resolveProcessDefinition method
+            ProcessDefinition processDefinitionEntity = deploymentManager.findDeployedProcessDefinitionById(processDefinitionId);
+            return deploymentManager.resolveProcessDefinition(processDefinitionEntity).getBpmnModel();
+        }
+        try {
+            BpmnModel bpmnModel = getBpmnModelFromProcessEntity(processInstanceId,true);
+            if (bpmnModel!=null) {
+                return bpmnModel;
+            }
+        } catch (Exception e) {
+            throw new FlowableException(e.getMessage());
+        }
+        DeploymentManager deploymentManager = CommandContextUtil.getProcessEngineConfiguration().getDeploymentManager();
+        if (isFromDb) {
+            return deploymentManager.getBpmnModelByIdFromDb(processDefinitionId);
+        }
+        // This will check the cache in the findDeployedProcessDefinitionById and resolveProcessDefinition method
+        ProcessDefinition processDefinitionEntity = deploymentManager.findDeployedProcessDefinitionById(processDefinitionId);
+        return deploymentManager.resolveProcessDefinition(processDefinitionEntity).getBpmnModel();
+
+    }
+
+    public static BpmnModel getBpmnModelFromProcessEntity(String processInstanceId,boolean isRead) throws Exception{
         // 加锁
         RedisWorker redisWorker = CommandContextUtil.getProcessEngineConfiguration().getRedisWorker();
 
         boolean lock = false;
-        lock = redisWorker.setIfAbsent(String.join("PROCESS#",processInstanceId), 15,String.join(processInstanceId,String.valueOf(System.currentTimeMillis())));
-        if (!lock) {
+        String lockFlag = "PROCESSWRITE#"+ processInstanceId;
+        // 默认判断当前是否先有写锁
+        if (StringUtils.isNotBlank(redisWorker.get(lockFlag))) {
             throw new FlowableException("Cannot Get PROCESS "+processInstanceId+" lock");
+        } else if (!isRead) {
+            if (StringUtils.isNotBlank(redisWorker.get(String.join("PROCESSREAD#",processInstanceId)))) {
+                throw new FlowableException("Cannot Get PROCESS "+processInstanceId+" lock");
+            }
+            lock = redisWorker.setIfAbsent(lockFlag, 15,String.join(processInstanceId,String.valueOf(System.currentTimeMillis())));
+            if (!lock) {
+                throw new FlowableException("Cannot Get PROCESS "+processInstanceId+" lock");
+            }
+        } else {
+            // 读锁
+            lockFlag = String.join("PROCESSREAD#",processInstanceId);
+            lock = redisWorker.setIfAbsent(lockFlag, 15,String.join(processInstanceId,String.valueOf(System.currentTimeMillis())));
         }
+
         try {
             ProcessDataManager processDataManager = CommandContextUtil.getProcessEngineConfiguration().getProcessDataManager();
             ProcessEntity processEntity = processDataManager.getProcessByInstanceId(processInstanceId);
@@ -237,7 +284,7 @@ public class ProcessDefinitionUtil {
             throw new FlowableException(e.getMessage());
         } finally {
             if (lock) {
-                redisWorker.delete(String.join("PROCESS#",processInstanceId));
+                redisWorker.delete(lockFlag);
             }
         }
         return null;
@@ -252,9 +299,12 @@ public class ProcessDefinitionUtil {
         }
         RedisWorker redisWorker = CommandContextUtil.getProcessEngineConfiguration().getRedisWorker();
         // 加锁
-        // 最高发leader到5级
         boolean lock = false;
-        lock = redisWorker.setIfAbsent(String.join("PROCESS#",processInstanceId), 15,String.join(processInstanceId,String.valueOf(System.currentTimeMillis())));
+        String lockFlag = "PROCESSWRITE#"+ processInstanceId;
+        if (StringUtils.isNotBlank(redisWorker.get(String.join("PROCESSREAD#",processInstanceId)))) {
+            throw new FlowableException("Cannot Get PROCESS "+processInstanceId+" lock");
+        }
+        lock = redisWorker.setIfAbsent(lockFlag, 15,String.join(processInstanceId,String.valueOf(System.currentTimeMillis())));
         if (!lock) {
             throw new FlowableException("Cannot Get PROCESS "+processInstanceId+" lock");
         }
@@ -275,7 +325,7 @@ public class ProcessDefinitionUtil {
             }
         } finally {
           if (lock) {
-              redisWorker.delete(String.join("PROCESS#",processInstanceId));
+              redisWorker.delete(lockFlag);
           }
         }
     }

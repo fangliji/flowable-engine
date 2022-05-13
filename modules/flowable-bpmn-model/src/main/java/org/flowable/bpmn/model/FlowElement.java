@@ -107,4 +107,14 @@ public abstract class FlowElement extends BaseElement implements HasExecutionLis
             }
         }
     }
+
+    public  void copyOther(BaseElement otherElement) {
+        super.copyOther(otherElement);
+        if (otherElement instanceof FlowElement) {
+            FlowElement other = (FlowElement) otherElement;
+            setDeleteFlag(other.getDeleteFlag());
+            setEditFlag(other.getEditFlag());
+        }
+
+    }
 }
