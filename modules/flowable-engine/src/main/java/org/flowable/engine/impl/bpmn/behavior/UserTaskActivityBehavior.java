@@ -280,7 +280,10 @@ public class UserTaskActivityBehavior extends TaskActivityBehavior {
             }
             currentTask = taskEntity;
         }
+        // 进行中的任务先取消认领
         ProcessEngineConfigurationImpl processEngineConfiguration = CommandContextUtil.getProcessEngineConfiguration();
+        org.flowable.engine.TaskService taskService = processEngineConfiguration.getTaskService();
+        taskService.unclaim(currentTask.getId());
         ExpressionManager expressionManager = processEngineConfiguration.getExpressionManager();
         UserTask userTask = (UserTask) flowElement;
         List<String> candidateUsers = userTask.getCandidateUsers();
