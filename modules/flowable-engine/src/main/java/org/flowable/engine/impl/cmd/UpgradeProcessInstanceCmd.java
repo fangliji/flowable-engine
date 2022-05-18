@@ -90,7 +90,7 @@ public class UpgradeProcessInstanceCmd implements Command<String>, Serializable 
             executionEntityList.forEach(executionEntity -> {
                 //TODO::排查发起节点
                 activityIds.add(executionEntity.getActivityId());
-                executionEntityManager.deleteExecutionAndRelatedData(executionEntity, executionEntity.getDeleteReason(), false, true, null);
+                executionEntityManager.deleteExecutionAndRelatedData(executionEntity, executionEntity.getDeleteReason(), false, false, null);
                 executionEntityManager.delete(executionEntity);
                 // 删除Eexcution;
                 // 删除Task;

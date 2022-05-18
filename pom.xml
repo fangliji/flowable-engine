@@ -1018,6 +1018,29 @@
 		<module>modules/flowable-spring-boot</module>
 	</modules>
 
+	<repositories>
+		<repository>
+		<id>mvn-datacenter</id>
+		<url>http://nexus.17usoft.com/repository/mvn-component-snapshot/</url>
+		<snapshots>
+			<enabled>true</enabled>
+		</snapshots>
+		<releases>
+			<enabled>false</enabled>
+		</releases>
+		</repository>
+		<repository>
+			<id>mvn-datacenter-release</id>
+			<url>http://nexus.17usoft.com/repository/mvn-component-release/</url>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+		</repository>
+	</repositories>
+
 	<build>
 		<plugins>
 			<plugin>
