@@ -1,5 +1,6 @@
 package org.flowable.engine.impl.cmd;
 
+import org.apache.commons.lang3.StringUtils;
 import org.flowable.bpmn.model.*;
 import org.flowable.bpmn.model.Process;
 import org.flowable.common.engine.api.FlowableIllegalArgumentException;
@@ -29,12 +30,21 @@ import java.util.stream.Collectors;
 public class AddUserTaskCmd implements Command<Void> {
     protected String processInstanceId;
     protected String processDefinitionId;
+    protected String endExcutionId;// 如果是结束节点才会有这个字段
     protected DynamicAddUserTaskBuilder dynamicAddUserTaskBuilder;
 
     public AddUserTaskCmd(String processInstanceId ,String processDefinitionId ,DynamicAddUserTaskBuilder dynamicAddUserTaskBuilder) {
         this.dynamicAddUserTaskBuilder = dynamicAddUserTaskBuilder;
         this.processInstanceId = processInstanceId;
         this.processDefinitionId = processDefinitionId;
+    }
+
+    public String getEndExcutionId() {
+        return endExcutionId;
+    }
+
+    public void setEndExcutionId(String endExcutionId) {
+        this.endExcutionId = endExcutionId;
     }
 
     @Override
@@ -89,10 +99,13 @@ public class AddUserTaskCmd implements Command<Void> {
                     break;
                 }
             }
+            if (StringUtils.isBlank(excutionId)) {
+                excutionId = endExcutionId;
+            }
             if (excutionId!=null) {
                 ExecutionEntity executionEntity = CommandContextUtil.getExecutionEntityManager(commandContext).findById(excutionId);
                 if (flowElement instanceof FlowNode) {
-                    ActivityBehavior activityBehavior = (ActivityBehavior) ((UserTask) flowElement).getBehavior();
+                    ActivityBehavior activityBehavior = (ActivityBehavior) ((FlowNode) flowElement).getBehavior();
                     FlowNodeActivityBehavior flowNodeActivityBehavior = (FlowNodeActivityBehavior) activityBehavior;
                     flowNodeActivityBehavior.jumpToTargetFlowElement(executionEntity,userTask);
                 }

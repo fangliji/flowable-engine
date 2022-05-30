@@ -260,6 +260,10 @@ public class ProcessDefinitionUtil {
             // 读锁
             lockFlag = String.join("PROCESSREAD#",processInstanceId);
             lock = redisWorker.setIfAbsent(lockFlag, 15,String.join(processInstanceId,String.valueOf(System.currentTimeMillis())));
+            if (!lock) {
+                // 续约
+                redisWorker.expire(lockFlag,15);
+            }
         }
 
         try {
