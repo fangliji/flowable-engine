@@ -37,6 +37,9 @@ public class UserTask extends Task {
     protected List<FormProperty> formProperties = new ArrayList<>();
     protected List<FlowableListener> taskListeners = new ArrayList<>();
     protected String skipExpression;
+    protected String reject_expression;
+    protected String cancel_expression;
+
 
     protected Map<String, Set<String>> customUserIdentityLinks = new HashMap<>();
     protected Map<String, Set<String>> customGroupIdentityLinks = new HashMap<>();
@@ -51,9 +54,27 @@ public class UserTask extends Task {
         this.assignee = assignee;
     }
 
+    public String getReject_expression() {
+        return reject_expression;
+    }
+
+    public void setReject_expression(String reject_expression) {
+        this.reject_expression = reject_expression;
+    }
+
+    public String getCancel_expression() {
+        return cancel_expression;
+    }
+
+    public void setCancel_expression(String cancel_expression) {
+        this.cancel_expression = cancel_expression;
+    }
+
     public String getOwner() {
         return owner;
     }
+
+
 
     public void setOwner(String owner) {
         this.owner = owner;
@@ -212,6 +233,8 @@ public class UserTask extends Task {
         setDueDate(otherElement.getDueDate());
         setPriority(otherElement.getPriority());
         setCategory(otherElement.getCategory());
+        setCancel_expression(otherElement.getCancel_expression());
+        setReject_expression(otherElement.getReject_expression());
         setExtensionId(otherElement.getExtensionId());
         setSkipExpression(otherElement.getSkipExpression());
 
@@ -250,6 +273,8 @@ public class UserTask extends Task {
             setCategory(otherElement.getCategory());
             setExtensionId(otherElement.getExtensionId());
             setSkipExpression(otherElement.getSkipExpression());
+            setReject_expression(otherElement.getReject_expression());
+            setCancel_expression(otherElement.getCancel_expression());
 
             setCandidateGroups(new ArrayList<>(otherElement.getCandidateGroups()));
             setCandidateUsers(new ArrayList<>(otherElement.getCandidateUsers()));

@@ -54,7 +54,10 @@ public class UserTaskXMLConverter extends BaseBpmnXMLConverter {
             new ExtensionAttribute(ATTRIBUTE_TASK_USER_CANDIDATEGROUPS),
             new ExtensionAttribute(ATTRIBUTE_TASK_USER_CATEGORY),
             new ExtensionAttribute(ATTRIBUTE_TASK_SERVICE_EXTENSIONID),
-            new ExtensionAttribute(ATTRIBUTE_TASK_USER_SKIP_EXPRESSION));
+            new ExtensionAttribute(ATTRIBUTE_TASK_USER_SKIP_EXPRESSION),
+            new ExtensionAttribute(ATTRIBUTE_TASK_USER_REJECT_EXPRESSION),
+            new ExtensionAttribute(ATTRIBUTE_TASK_USER_CANCEL_EXPRESSION)
+    );
 
     public UserTaskXMLConverter() {
         HumanPerformerParser humanPerformerParser = new HumanPerformerParser();
@@ -97,6 +100,8 @@ public class UserTaskXMLConverter extends BaseBpmnXMLConverter {
         userTask.setAssignee(BpmnXMLUtil.getAttributeValue(ATTRIBUTE_TASK_USER_ASSIGNEE, xtr));
         userTask.setOwner(BpmnXMLUtil.getAttributeValue(ATTRIBUTE_TASK_USER_OWNER, xtr));
         userTask.setPriority(BpmnXMLUtil.getAttributeValue(ATTRIBUTE_TASK_USER_PRIORITY, xtr));
+        userTask.setCancel_expression(BpmnXMLUtil.getAttributeValue(ATTRIBUTE_TASK_USER_CANCEL_EXPRESSION, xtr));
+        userTask.setReject_expression(BpmnXMLUtil.getAttributeValue(ATTRIBUTE_TASK_USER_REJECT_EXPRESSION, xtr));
 
         if (StringUtils.isNotEmpty(BpmnXMLUtil.getAttributeValue(ATTRIBUTE_TASK_USER_CANDIDATEUSERS, xtr))) {
             String expression = BpmnXMLUtil.getAttributeValue(ATTRIBUTE_TASK_USER_CANDIDATEUSERS, xtr);
@@ -135,6 +140,9 @@ public class UserTaskXMLConverter extends BaseBpmnXMLConverter {
         writeQualifiedAttribute(ATTRIBUTE_TASK_USER_BUSINESS_CALENDAR_NAME, userTask.getBusinessCalendarName(), xtw);
         writeQualifiedAttribute(ATTRIBUTE_TASK_USER_CATEGORY, userTask.getCategory(), xtw);
         writeQualifiedAttribute(ATTRIBUTE_FORM_FORMKEY, userTask.getFormKey(), xtw);
+        writeQualifiedAttribute(ATTRIBUTE_TASK_USER_CANCEL_EXPRESSION, userTask.getCancel_expression(), xtw);
+        writeQualifiedAttribute(ATTRIBUTE_TASK_USER_REJECT_EXPRESSION, userTask.getReject_expression(), xtw);
+
         if (userTask.getPriority() != null) {
             writeQualifiedAttribute(ATTRIBUTE_TASK_USER_PRIORITY, userTask.getPriority(), xtw);
         }

@@ -14,7 +14,7 @@
 	</parent>
 
 	<packaging>pom</packaging>
-	<version>0.6.4.2</version>
+	<version>0.6.4.4</version>
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<jdk.version>1.8</jdk.version>
@@ -1766,7 +1766,7 @@
 		<repository>
 			<id>mvn-datacenter</id>
 			<name>nexus maven</name>
-			<url>http://nexus.17usoft.com/repository/mvn-component-release/</url>
+			<url>http://nexus.17usoft.com/repository/mvn-component-snapshot/</url>
 		</repository>
 	</distributionManagement>
 </project>

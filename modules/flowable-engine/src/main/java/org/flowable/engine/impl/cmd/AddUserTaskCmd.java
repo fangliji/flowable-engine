@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
  * 创建时间：4/14/22 7:49 PM
  * 创建人：flj
  */
-public class AddUserTaskCmd implements Command<Void> {
+public class AddUserTaskCmd implements Command<String> {
     protected String processInstanceId;
     protected String processDefinitionId;
     protected String endExcutionId;// 如果是结束节点才会有这个字段
@@ -48,7 +48,7 @@ public class AddUserTaskCmd implements Command<Void> {
     }
 
     @Override
-    public Void execute(CommandContext commandContext) {
+    public String execute(CommandContext commandContext) {
         BpmnModel bpmnModel = ProcessDefinitionUtil.getBpmnModel(processInstanceId,processDefinitionId,true,false);
         Process process = bpmnModel.getMainProcess();
         FlowElement flowElement = process.getFlowElement(dynamicAddUserTaskBuilder.getTaskKey());
@@ -72,7 +72,7 @@ public class AddUserTaskCmd implements Command<Void> {
         }
         // 更新完成之后，判断是否需要处理节点
         dealJumpToTargetElement(commandContext, flowElement, userTask);
-        return null;
+        return userTask.getId();
     }
 
     private void addUserTask (Process process,FlowNode oldNode,UserTask addUserTask ,List<SequenceFlow> sequenceFlows ,FlowNode targetFlowNode) {

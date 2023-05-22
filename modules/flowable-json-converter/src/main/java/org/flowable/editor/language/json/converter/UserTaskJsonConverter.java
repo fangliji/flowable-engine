@@ -163,6 +163,8 @@ public class UserTaskJsonConverter extends BaseBpmnJsonConverter implements Form
         }
 
         setPropertyValue(PROPERTY_SKIP_EXPRESSION, userTask.getSkipExpression(), propertiesNode);
+        setPropertyValue(PROPERTY_REJECT_EXPRESSION,userTask.getReject_expression(),propertiesNode);
+        setPropertyValue(PROPERTY_CANCEL_EXPRESSION,userTask.getCancel_expression(),propertiesNode);
 
         if (StringUtils.isNotEmpty(userTask.getFormKey())) {
             if (formKeyMap != null && formKeyMap.containsKey(userTask.getFormKey())) {

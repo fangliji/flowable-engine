@@ -296,6 +296,11 @@ public interface StencilConstants {
     final String PROPERTY_HTTPTASK_SAVE_RESPONSE_AS_JSON = "httptasksaveresponseasjson";
 
     final String PROPERTY_SKIP_EXPRESSION = "skipexpression";
+    final String PROPERTY_REJECT_EXPRESSION = "reject_expression";
+
+    final String PROPERTY_CANCEL_EXPRESSION = "cancel_expression";
+
+
     final String PROPERTY_SEQUENTIAL = "sequential";
 
 

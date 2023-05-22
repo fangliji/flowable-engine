@@ -212,6 +212,11 @@ public interface BpmnXMLConstants {
     public static final String ATTRIBUTE_TASK_USER_PRIORITY = "priority";
     public static final String ATTRIBUTE_TASK_USER_SKIP_EXPRESSION = "skipExpression";
 
+    public static final String ATTRIBUTE_TASK_USER_CANCEL_EXPRESSION = "cancel_expression";
+    public static final String ATTRIBUTE_TASK_USER_REJECT_EXPRESSION = "reject_expression";
+
+
+
     public static final String ATTRIBUTE_TASK_RULE_VARIABLES_INPUT = "ruleVariablesInput";
     public static final String ATTRIBUTE_TASK_RULE_RESULT_VARIABLE = "resultVariable";
     public static final String ATTRIBUTE_TASK_RULE_RULES = "rules";
