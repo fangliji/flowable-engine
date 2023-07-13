@@ -165,6 +165,7 @@ public class UserTaskJsonConverter extends BaseBpmnJsonConverter implements Form
         setPropertyValue(PROPERTY_SKIP_EXPRESSION, userTask.getSkipExpression(), propertiesNode);
         setPropertyValue(PROPERTY_REJECT_EXPRESSION,userTask.getReject_expression(),propertiesNode);
         setPropertyValue(PROPERTY_CANCEL_EXPRESSION,userTask.getCancel_expression(),propertiesNode);
+        setPropertyValue(PROPERTY_AI_RULE,userTask.getAiRule(),propertiesNode);
 
         if (StringUtils.isNotEmpty(userTask.getFormKey())) {
             if (formKeyMap != null && formKeyMap.containsKey(userTask.getFormKey())) {
@@ -221,7 +222,7 @@ public class UserTaskJsonConverter extends BaseBpmnJsonConverter implements Form
                 }
             }
         }
-
+        task.setAiRule(getPropertyValueAsString(PROPERTY_AI_RULE, elementNode));
         task.setDueDate(getPropertyValueAsString(PROPERTY_USERTASK_DUEDATE, elementNode));
         task.setCategory(getPropertyValueAsString(PROPERTY_USERTASK_CATEGORY, elementNode));
 

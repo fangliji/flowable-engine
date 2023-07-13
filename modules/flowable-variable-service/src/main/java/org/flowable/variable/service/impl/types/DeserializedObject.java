@@ -35,8 +35,10 @@ public class DeserializedObject {
     }
 
     public void verifyIfBytesOfSerializedObjectChanged() {
+        // i think this is a bug  tc-caijifang
+
         // this first check verifies if the variable value was not overwritten with another object
-        if (deserializedObject == variableInstanceEntity.getCachedValue() && !variableInstanceEntity.isDeleted()) {
+       /* if (deserializedObject == variableInstanceEntity.getCachedValue() && !variableInstanceEntity.isDeleted()) {
             byte[] bytes = type.serialize(deserializedObject, variableInstanceEntity);
             if (!Arrays.equals(originalBytes, bytes)) {
 
@@ -48,6 +50,6 @@ public class DeserializedObject {
                     variableInstanceEntity.setBytes(bytes);
                 }
             }
-        }
+        }*/
     }
 }

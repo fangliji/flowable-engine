@@ -56,7 +56,8 @@ public class UserTaskXMLConverter extends BaseBpmnXMLConverter {
             new ExtensionAttribute(ATTRIBUTE_TASK_SERVICE_EXTENSIONID),
             new ExtensionAttribute(ATTRIBUTE_TASK_USER_SKIP_EXPRESSION),
             new ExtensionAttribute(ATTRIBUTE_TASK_USER_REJECT_EXPRESSION),
-            new ExtensionAttribute(ATTRIBUTE_TASK_USER_CANCEL_EXPRESSION)
+            new ExtensionAttribute(ATTRIBUTE_TASK_USER_CANCEL_EXPRESSION),
+            new ExtensionAttribute(ATTRIBUTE_TASK_USER_AI_RULE)
     );
 
     public UserTaskXMLConverter() {
@@ -102,6 +103,7 @@ public class UserTaskXMLConverter extends BaseBpmnXMLConverter {
         userTask.setPriority(BpmnXMLUtil.getAttributeValue(ATTRIBUTE_TASK_USER_PRIORITY, xtr));
         userTask.setCancel_expression(BpmnXMLUtil.getAttributeValue(ATTRIBUTE_TASK_USER_CANCEL_EXPRESSION, xtr));
         userTask.setReject_expression(BpmnXMLUtil.getAttributeValue(ATTRIBUTE_TASK_USER_REJECT_EXPRESSION, xtr));
+        userTask.setAiRule(BpmnXMLUtil.getAttributeValue(ATTRIBUTE_TASK_USER_AI_RULE, xtr));
 
         if (StringUtils.isNotEmpty(BpmnXMLUtil.getAttributeValue(ATTRIBUTE_TASK_USER_CANDIDATEUSERS, xtr))) {
             String expression = BpmnXMLUtil.getAttributeValue(ATTRIBUTE_TASK_USER_CANDIDATEUSERS, xtr);
@@ -142,6 +144,7 @@ public class UserTaskXMLConverter extends BaseBpmnXMLConverter {
         writeQualifiedAttribute(ATTRIBUTE_FORM_FORMKEY, userTask.getFormKey(), xtw);
         writeQualifiedAttribute(ATTRIBUTE_TASK_USER_CANCEL_EXPRESSION, userTask.getCancel_expression(), xtw);
         writeQualifiedAttribute(ATTRIBUTE_TASK_USER_REJECT_EXPRESSION, userTask.getReject_expression(), xtw);
+        writeQualifiedAttribute(ATTRIBUTE_TASK_USER_AI_RULE, userTask.getAiRule(), xtw);
 
         if (userTask.getPriority() != null) {
             writeQualifiedAttribute(ATTRIBUTE_TASK_USER_PRIORITY, userTask.getPriority(), xtw);

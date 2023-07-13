@@ -15,6 +15,8 @@ package org.flowable.engine.impl.persistence.entity;
 import java.io.Serializable;
 
 import org.flowable.engine.impl.util.CommandContextUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * <p>
@@ -24,6 +26,7 @@ import org.flowable.engine.impl.util.CommandContextUtil;
  * @author Marcus Klimstra (CGI)
  */
 public class ByteArrayRef implements Serializable {
+    private static final Logger logger = LoggerFactory.getLogger(ByteArrayRef.class);
 
     private static final long serialVersionUID = 1L;
 
@@ -70,6 +73,7 @@ public class ByteArrayRef implements Serializable {
             }
         } else {
             ensureInitialized();
+            logger.info("更新ByteArrayRef 当前执行栈：{} 当前对象值：{}",  printThreadStack(),entity.toString());
             entity.setBytes(bytes);
         }
     }
@@ -77,6 +81,25 @@ public class ByteArrayRef implements Serializable {
     public ByteArrayEntity getEntity() {
         ensureInitialized();
         return entity;
+    }
+
+    public String printThreadStack(){
+        StackTraceElement[] st = Thread.currentThread().getStackTrace();
+        if(st==null){
+            return "";
+        }
+        StringBuffer sbf =new StringBuffer();
+        for(StackTraceElement e:st){
+            if(sbf.length()>0){
+                sbf.append(" <- ");
+                sbf.append(System.getProperty("line.separator"));
+            }
+            sbf.append(java.text.MessageFormat.format("{0}.{1}() {2}"
+                    ,e.getClassName()
+                    ,e.getMethodName()
+                    ,e.getLineNumber()));
+        }
+        return sbf.toString();
     }
 
     public void delete() {

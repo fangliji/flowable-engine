@@ -16,6 +16,8 @@ import java.io.Serializable;
 import java.util.Arrays;
 
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Tom Baeyens
@@ -23,7 +25,7 @@ import org.apache.commons.lang3.StringUtils;
  * @author Joram Barrez
  */
 public class VariableByteArrayEntityImpl extends AbstractVariableServiceEntity implements VariableByteArrayEntity, Serializable {
-
+    private static final Logger logger = LoggerFactory.getLogger(VariableByteArrayEntityImpl.class);
     private static final long serialVersionUID = 1L;
 
     protected String name;
@@ -68,7 +70,10 @@ public class VariableByteArrayEntityImpl extends AbstractVariableServiceEntity i
 
     @Override
     public void setBytes(byte[] bytes) {
+
         this.bytes = bytes;
+        logger.info("更新VariableByteArrayEntityImpl 当前执行栈：{} 当前对象值：{},当前对象的hashCode值：{},当前对象的线程id:{},",  printThreadStack(),this.toString(),this.hashCode(),Thread.currentThread().getId());
+
     }
 
     @Override
@@ -103,5 +108,25 @@ public class VariableByteArrayEntityImpl extends AbstractVariableServiceEntity i
         }
 
     }
+
+    public String printThreadStack(){
+        StackTraceElement[] st = Thread.currentThread().getStackTrace();
+        if(st==null){
+            return "";
+        }
+        StringBuffer sbf =new StringBuffer();
+        for(StackTraceElement e:st){
+            if(sbf.length()>0){
+                sbf.append(" <- ");
+                sbf.append(System.getProperty("line.separator"));
+            }
+            sbf.append(java.text.MessageFormat.format("{0}.{1}() {2}"
+                    ,e.getClassName()
+                    ,e.getMethodName()
+                    ,e.getLineNumber()));
+        }
+        return sbf.toString();
+    }
+
 
 }

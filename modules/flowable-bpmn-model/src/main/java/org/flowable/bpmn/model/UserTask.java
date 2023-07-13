@@ -39,12 +39,19 @@ public class UserTask extends Task {
     protected String skipExpression;
     protected String reject_expression;
     protected String cancel_expression;
-
-
+    protected String aiRule;
     protected Map<String, Set<String>> customUserIdentityLinks = new HashMap<>();
     protected Map<String, Set<String>> customGroupIdentityLinks = new HashMap<>();
 
     protected List<CustomProperty> customProperties = new ArrayList<>();
+
+    public String getAiRule() {
+        return aiRule;
+    }
+
+    public void setAiRule(String aiRule) {
+        this.aiRule = aiRule;
+    }
 
     public String getAssignee() {
         return assignee;
@@ -237,7 +244,7 @@ public class UserTask extends Task {
         setReject_expression(otherElement.getReject_expression());
         setExtensionId(otherElement.getExtensionId());
         setSkipExpression(otherElement.getSkipExpression());
-
+        setAiRule(otherElement.getAiRule());
         setCandidateGroups(new ArrayList<>(otherElement.getCandidateGroups()));
         setCandidateUsers(new ArrayList<>(otherElement.getCandidateUsers()));
 
@@ -275,6 +282,7 @@ public class UserTask extends Task {
             setSkipExpression(otherElement.getSkipExpression());
             setReject_expression(otherElement.getReject_expression());
             setCancel_expression(otherElement.getCancel_expression());
+            setAiRule(otherElement.getAiRule());
 
             setCandidateGroups(new ArrayList<>(otherElement.getCandidateGroups()));
             setCandidateUsers(new ArrayList<>(otherElement.getCandidateUsers()));

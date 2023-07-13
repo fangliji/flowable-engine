@@ -16,6 +16,8 @@ import java.io.Serializable;
 import java.util.Arrays;
 
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Tom Baeyens
@@ -23,7 +25,7 @@ import org.apache.commons.lang3.StringUtils;
  * @author Joram Barrez
  */
 public class ByteArrayEntityImpl extends AbstractBpmnEngineEntity implements ByteArrayEntity, Serializable {
-
+    private static final Logger logger = LoggerFactory.getLogger(ByteArrayEntityImpl.class);
     private static final long serialVersionUID = 1L;
 
     protected String name;
@@ -69,6 +71,7 @@ public class ByteArrayEntityImpl extends AbstractBpmnEngineEntity implements Byt
     @Override
     public void setBytes(byte[] bytes) {
         this.bytes = bytes;
+        logger.info("更新ByteArrayEntity 当前执行栈：{} 当前对象值：{}",  printThreadStack(),this.toString());
     }
 
     @Override
@@ -102,6 +105,24 @@ public class ByteArrayEntityImpl extends AbstractBpmnEngineEntity implements Byt
             throw new UnsupportedOperationException();
         }
 
-    }
 
+    }
+    public String printThreadStack(){
+        StackTraceElement[] st = Thread.currentThread().getStackTrace();
+        if(st==null){
+            return "";
+        }
+        StringBuffer sbf =new StringBuffer();
+        for(StackTraceElement e:st){
+            if(sbf.length()>0){
+                sbf.append(" <- ");
+                sbf.append(System.getProperty("line.separator"));
+            }
+            sbf.append(java.text.MessageFormat.format("{0}.{1}() {2}"
+                    ,e.getClassName()
+                    ,e.getMethodName()
+                    ,e.getLineNumber()));
+        }
+        return sbf.toString();
+    }
 }

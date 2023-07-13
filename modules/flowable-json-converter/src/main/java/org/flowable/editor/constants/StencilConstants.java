@@ -300,6 +300,8 @@ public interface StencilConstants {
 
     final String PROPERTY_CANCEL_EXPRESSION = "cancel_expression";
 
+    final String PROPERTY_AI_RULE = "aiRule";
+
 
     final String PROPERTY_SEQUENTIAL = "sequential";
 

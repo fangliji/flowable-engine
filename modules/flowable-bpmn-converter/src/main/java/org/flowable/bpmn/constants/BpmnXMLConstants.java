@@ -214,6 +214,7 @@ public interface BpmnXMLConstants {
 
     public static final String ATTRIBUTE_TASK_USER_CANCEL_EXPRESSION = "cancel_expression";
     public static final String ATTRIBUTE_TASK_USER_REJECT_EXPRESSION = "reject_expression";
+    public static final String ATTRIBUTE_TASK_USER_AI_RULE = "aiRule";
 
 
 

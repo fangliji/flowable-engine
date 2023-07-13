@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import org.flowable.common.engine.api.FlowableException;
 import org.flowable.common.engine.api.delegate.event.FlowableEngineEventType;
 import org.flowable.common.engine.impl.context.Context;
@@ -35,6 +36,8 @@ import org.flowable.variable.api.types.VariableTypes;
 import org.flowable.variable.service.VariableServiceConfiguration;
 import org.flowable.variable.service.event.impl.FlowableVariableEventBuilder;
 import org.flowable.variable.service.impl.util.CommandContextUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Tom Baeyens
@@ -43,7 +46,7 @@ import org.flowable.variable.service.impl.util.CommandContextUtil;
  * @author Saeid Mirzaei
  */
 public abstract class VariableScopeImpl extends AbstractEntity implements Serializable, VariableScope {
-
+    private static final Logger logger = LoggerFactory.getLogger(VariableScopeImpl.class);
     private static final long serialVersionUID = 1L;
 
     // The cache used when fetching all variables
@@ -856,6 +859,7 @@ public abstract class VariableScopeImpl extends AbstractEntity implements Serial
             variableInstance.forceUpdate();
             variableInstance.setValue(value);
         } else {
+            logger.info("update varibles procInsId : {} varKey:{} varValue:{}", variableInstance.getProcessInstanceId(),variableInstance.getName(),String.valueOf(value));
             variableInstance.setValue(value);
         }
 
